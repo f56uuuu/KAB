@@ -1,0 +1,37 @@
+{
+  "@@locale": "ar",
+
+  "commonContinue": "متابعة",
+  "commonCancel": "إلغاء",
+  "commonRetry": "إعادة المحاولة",
+  "commonSeeAll": "عرض الكل",
+
+  "onboardingLanguagePrompt": "اختر لغتك",
+
+  "authPhoneTitle": "أدخل رقم هاتفك",
+  "authPhoneHint": "رقم الهاتف",
+  "authOtpTitle": "أدخل الرمز الذي أرسلناه لك",
+  "authOtpHint": "رمز مكوّن من 6 أرقام",
+  "authOtpResend": "إعادة إرسال الرمز",
+
+  "permissionLocationReason": "حتى نحدد أقرب السائقين ونضبط موقعك بدقة.",
+  "permissionNotificationReason": "حتى نخبرك بوصول السائق وتحديثات طلبك.",
+
+  "errorsOtpRateLimited": "محاولات كثيرة جدًا. الرجاء الانتظار قليلًا ثم المحاولة مجددًا.",
+  "errorsOtpInvalidCode": "الرمز غير صحيح. تحقق منه وحاول مجددًا.",
+  "errorsNetworkUnreachable": "لا يوجد اتصال بالإنترنت. تحقق من اتصالك.",
+  "errorsGeneric": "حدث خطأ ما. الرجاء المحاولة مجددًا.",
+
+  "homeServicesRide": "توصيل",
+  "homeServicesDelivery": "طلب",
+  "homeServicesMarket": "السوق",
+  "homeServicesGifts": "هدايا",
+  "homeServicesOffers": "عروض",
+  "homeServicesCoupons": "كوبونات",
+
+  "rideDriverEtaMinutes": "{minutes, plural, =0{وصل الآن} =1{دقيقة واحدة} =2{دقيقتان} few{{minutes} دقائق} other{{minutes} دقيقة}}",
+
+  "stateLoading": "جارٍ التحميل…",
+  "stateEmptyTitle": "لا يوجد شيء هنا بعد",
+  "stateErrorTitle": "حدثت مشكلة"
+}

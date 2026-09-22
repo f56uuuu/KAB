@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+body {
+  margin: 0;
+  background-color: #FFFFFF;
+  color: #0D0D0F;
+  font-family: 'Tajawal', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}

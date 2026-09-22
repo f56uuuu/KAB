@@ -1,0 +1,42 @@
+{
+  "@@locale": "en",
+
+  "commonContinue": "Continue",
+  "commonCancel": "Cancel",
+  "commonRetry": "Retry",
+  "commonSeeAll": "See all",
+
+  "onboardingLanguagePrompt": "Choose your language",
+
+  "authPhoneTitle": "Enter your phone number",
+  "authPhoneHint": "Phone number",
+  "authOtpTitle": "Enter the code we sent you",
+  "authOtpHint": "6-digit code",
+  "authOtpResend": "Resend code",
+
+  "permissionLocationReason": "So we can find the closest drivers and get your location right.",
+  "permissionNotificationReason": "So we can tell you when your driver arrives and your order updates.",
+
+  "errorsOtpRateLimited": "Too many attempts. Please wait a moment and try again.",
+  "errorsOtpInvalidCode": "That code isn't right. Please check and try again.",
+  "errorsNetworkUnreachable": "No internet connection. Please check your connection.",
+  "errorsGeneric": "Something went wrong. Please try again.",
+
+  "homeServicesRide": "Ride",
+  "homeServicesDelivery": "Delivery",
+  "homeServicesMarket": "Market",
+  "homeServicesGifts": "Gifts",
+  "homeServicesOffers": "Offers",
+  "homeServicesCoupons": "Coupons",
+
+  "rideDriverEtaMinutes": "{minutes, plural, =0{Arriving now} =1{1 minute away} other{{minutes} minutes away}}",
+  "@rideDriverEtaMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+
+  "stateLoading": "Loading…",
+  "stateEmptyTitle": "Nothing here yet",
+  "stateErrorTitle": "We hit a snag"
+}

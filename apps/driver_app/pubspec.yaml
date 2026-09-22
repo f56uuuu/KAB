@@ -1,0 +1,37 @@
+name: kab_driver_app
+description: KAB — driver-facing app (online/offline, ride requests, earnings, documents).
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  supabase_flutter: ^2.5.6
+  geolocator: ^12.0.0
+  kab_core:
+    path: ../../packages/kab_core
+  kab_design_system:
+    path: ../../packages/kab_design_system
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo/
+    - assets/icon/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

@@ -1,0 +1,24 @@
+name: kab_core
+description: Shared auth, networking, permissions, and localization primitives for all KAB apps.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  supabase_flutter: ^2.5.6
+  shared_preferences: ^2.2.3
+  permission_handler: ^11.3.1
+  connectivity_plus: ^6.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^4.0.0
+
+flutter:

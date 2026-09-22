@@ -1,0 +1,21 @@
+name: kab_maps
+description: Map provider abstraction (Google primary, swappable) + periodic offline cache refresh for KAB's target countries.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_maps_flutter: ^2.7.0
+  http: ^1.2.1
+  workmanager: ^0.5.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
