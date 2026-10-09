@@ -1,30 +1,50 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 const COUNTRY_CODES = [
-  { code: '+964', flag: '🇮🇶' },
-  { code: '+971', flag: '🇦🇪' },
-  { code: '+963', flag: '🇸🇾' },
+  { code: '+964', flag: '🇮🇶', label: 'العراق' },
+  { code: '+971', flag: '🇦🇪', label: 'الإمارات' },
+  { code: '+963', flag: '🇸🇾', label: 'سوريا' },
 ];
 
+// Testing phase: a real Supabase session is created without SMS (anonymous sign-in),
+// and the phone number is stored on the user's profile. Swap to phone OTP once an
+// SMS provider is configured — every other screen already works off the real session.
 export default function LoginPage() {
   const [countryCode, setCountryCode] = useState('+964');
   const [phone, setPhone] = useState('');
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  const digits = phone.replace(/\D/g, '').replace(/^0+/, '');
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!phone.trim()) return;
+    if (digits.length < 7) {
+      setError('أدخل رقم هاتف صحيح');
+      return;
+    }
+    setLoading(true);
+    setError(null);
 
-    // حفظ البيانات مباشرة
-    localStorage.setItem('userPhone', `${countryCode}${phone}`);
-    localStorage.setItem('userId', 'temp-' + Date.now());
-    document.cookie = `kap_session=${encodeURIComponent(countryCode + phone)}; path=/; max-age=2592000; samesite=lax`;
+    const supabase = createSupabaseBrowserClient();
+    const { data, error: err } = await supabase.auth.signInAnonymously({
+      options: { data: { phone: `${countryCode}${digits}` } },
+    });
 
-    router.replace('/home');
-    router.refresh();
+    if (err || !data.user) {
+      setLoading(false);
+      setError(`تعذر تسجيل الدخول (${err?.message ?? 'unknown'})`);
+      return;
+    }
+
+    // Best effort: the profile row is created by a DB trigger.
+    await supabase.from('profiles').update({ phone_number: `${countryCode}${digits}` }).eq('id', data.user.id);
+
+    // Full navigation so the middleware sees the fresh auth cookie.
+    window.location.assign('/home');
   }
 
   return (
@@ -39,12 +59,13 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <h1 className="text-xl font-extrabold">أدخل رقم هاتفك</h1>
-          <p className="text-sm text-neutralGray -mt-2">لتسجيل الدخول للتطبيق</p>
-          <div className="flex gap-2">
+          <p className="text-sm text-neutralGray -mt-2">للدخول إلى KAP</p>
+          <div className="flex gap-2" dir="ltr">
             <select
               value={countryCode}
               onChange={(e) => setCountryCode(e.target.value)}
               className="border border-border rounded-xl px-2 h-14 bg-surface"
+              aria-label="رمز الدولة"
             >
               {COUNTRY_CODES.map((c) => (
                 <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
@@ -52,18 +73,21 @@ export default function LoginPage() {
             </select>
             <input
               type="tel"
+              inputMode="tel"
               autoFocus
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="رقم الهاتف"
-              className="flex-1 border border-border rounded-xl px-4 h-14 focus:outline-none focus:ring-2 focus:ring-accent"
+              placeholder="7XX XXX XXXX"
+              className="flex-1 min-w-0 border border-border rounded-xl px-4 h-14 focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
+          {error && <p className="text-danger text-sm">{error}</p>}
           <button
             type="submit"
-            className="h-14 rounded-2xl bg-accent text-ink font-extrabold"
+            disabled={loading}
+            className="h-14 rounded-2xl bg-accent text-ink font-extrabold disabled:opacity-50"
           >
-            متابعة
+            {loading ? 'جارٍ الدخول…' : 'متابعة'}
           </button>
         </form>
       </div>

@@ -29,9 +29,25 @@ export default function RideTrackingPage() {
       if (Array.isArray(data) && data.length > 0) setDriver(data[0]);
     }
 
+    let demoTimer: ReturnType<typeof setTimeout> | null = null;
+
     (async () => {
       const { data } = await supabase.from('rides').select('*').eq('id', id).single();
       setRide(data);
+      // Testing: when DEMO_MODE is on in the DB, a demo driver accepts after a few seconds.
+      if (data?.status === 'SEARCHING') {
+        demoTimer = setTimeout(async () => {
+          await supabase.rpc('demo_assign_driver', { p_ride_id: Number(id) });
+          const { data: fresh } = await supabase.from('rides').select('*').eq('id', id).single();
+          if (fresh) {
+            setRide(fresh);
+            if (fresh.driver_id && !driverPoll) {
+              fetchDriver(fresh.driver_id);
+              driverPoll = setInterval(() => fetchDriver(fresh.driver_id), 5000);
+            }
+          }
+        }, 5000);
+      }
       if (data?.driver_id) {
         fetchDriver(data.driver_id);
         driverPoll = setInterval(() => fetchDriver(data.driver_id), 5000);
@@ -59,6 +75,7 @@ export default function RideTrackingPage() {
       .subscribe();
 
     return () => {
+      if (demoTimer) clearTimeout(demoTimer);
       supabase.removeChannel(channel);
       if (driverPoll) clearInterval(driverPoll);
     };
@@ -84,7 +101,11 @@ export default function RideTrackingPage() {
           <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
         )}
         <h1 className="font-extrabold text-lg text-center">{STATUS_COPY[ride.status] ?? ride.status}</h1>
-        {ride.status === 'SEARCHING' && (
+        <div className="text-xs text-white/60 text-center leading-6">
+          <div>من: {ride.pickup_address}</div>
+          <div>إلى: {ride.dropoff_address}</div>
+        </div>
+        {['SEARCHING', 'ASSIGNED'].includes(ride.status) && (
           <button onClick={cancelWhileSearching} className="text-sm text-white/70 underline mt-2">
             إلغاء
           </button>
@@ -105,7 +126,7 @@ export default function RideTrackingPage() {
       )}
 
       <div className="p-5 text-center bg-[#141417]">
-        <span className="font-extrabold text-lg">{ride.estimated_fare} {ride.currency_code}</span>
+        <span className="font-extrabold text-lg">{Number(ride.estimated_fare).toLocaleString('ar')} {ride.currency_code}</span>
       </div>
     </main>
   );

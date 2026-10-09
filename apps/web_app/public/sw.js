@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kap-shell-v1';
+const CACHE_NAME = 'kap-shell-v2';
 // Keep this list tiny and static — the goal is instant reopen + an offline
 // fallback shell, not full offline app functionality (which needs the live
 // Supabase connection anyway for anything that matters: prices, ride status).
@@ -20,19 +20,26 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Network-first for everything (this is a live app, staleness is worse than
-// a spinner) with a cache fallback only when the network truly fails —
-// covers the "weak internet" case (section 90) without ever serving stale
-// prices or ride state when a connection exists.
+// Only the app's own GET requests are handled. Cross-origin traffic (Supabase API,
+// map search/routing, map tiles) goes straight to the network: user data and ride
+// state are never written to the device cache, and map tiles don't fill storage.
+// Network-first, with a cache fallback only when the network truly fails (weak internet).
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/_next/data') || url.searchParams.has('_rsc')) return;
+
   event.respondWith(
-    fetch(event.request)
+    fetch(req)
       .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
+        if (response.ok && response.type === 'basic') {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
+        }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => (await caches.match(req)) || (await caches.match('/')) || Response.error())
   );
 });
