@@ -12,52 +12,38 @@ export interface MapProvider {
   route(from: LatLng, to: LatLng): Promise<Route | null>;
 }
 
-const NOMINATIM = 'https://nominatim.openstreetmap.org';
-const OSRM = 'https://router.project-osrm.org';
+// All map calls go through our own server route (/api/geo), which talks to the
+// providers. The browser never depends on a third party's CORS or CDN behaviour.
+const GEO = '/api/geo';
 
 function shortLabel(displayName: string) {
   return displayName.split(',').slice(0, 3).join('،').trim();
 }
 
+async function geo(params: Record<string, string | number>) {
+  const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
+  const res = await fetch(`${GEO}?${qs}`);
+  if (!res.ok) throw new Error(`geo ${res.status}`);
+  return res.json();
+}
+
 export const osmProvider: MapProvider = {
   async search(query, near) {
-    const params = new URLSearchParams({
+    const rows: { name: string; lat: number; lng: number }[] = await geo({
+      type: 'search',
       q: query,
-      format: 'jsonv2',
-      limit: '6',
-      'accept-language': 'ar',
-      countrycodes: 'iq,ae,sy',
+      ...(near ? { lat: near.lat, lng: near.lng } : {}),
     });
-    if (near) {
-      const d = 0.6; // ~60 km box, preferred but not strict
-      params.set('viewbox', `${near.lng - d},${near.lat + d},${near.lng + d},${near.lat - d}`);
-    }
-    const res = await fetch(`${NOMINATIM}/search?${params}`);
-    if (!res.ok) return [];
-    const rows: any[] = await res.json();
-    return rows.map((r) => ({ label: shortLabel(r.display_name), point: { lat: +r.lat, lng: +r.lon } }));
+    return rows.map((r) => ({ label: shortLabel(r.name), point: { lat: r.lat, lng: r.lng } }));
   },
 
   async reverse({ lat, lng }) {
-    const res = await fetch(`${NOMINATIM}/reverse?format=jsonv2&accept-language=ar&lat=${lat}&lon=${lng}`);
-    if (!res.ok) return null;
-    const r = await res.json();
-    return r?.display_name ? shortLabel(r.display_name) : null;
+    const r = await geo({ type: 'reverse', lat, lng });
+    return r?.name ? shortLabel(r.name) : null;
   },
 
   async route(from, to) {
-    const res = await fetch(
-      `${OSRM}/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`,
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const r = data?.routes?.[0];
-    if (!r) return null;
-    return {
-      distanceKm: r.distance / 1000,
-      durationMin: Math.max(1, Math.ceil(r.duration / 60)),
-      path: r.geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng]),
-    };
+    return geo({ type: 'route', fromLat: from.lat, fromLng: from.lng, toLat: to.lat, toLng: to.lng });
   },
 };
 
