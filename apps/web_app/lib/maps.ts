@@ -49,24 +49,28 @@ export const osmProvider: MapProvider = {
 
 export const mapProvider: MapProvider = osmProvider;
 
-// Leaflet is bundled with the app (no CDN, no API key): it loads even when
-// third-party script hosts are blocked or slow on the user's network.
-let leafletPromise: Promise<any> | null = null;
-export function loadLeaflet(): Promise<any> {
+// MapLibre GL (vector maps, GPU-rendered) is bundled with the app and loaded only on screens with a map.
+let mlPromise: Promise<any> | null = null;
+export function loadMapLibre(): Promise<any> {
   if (typeof window === 'undefined') return Promise.reject(new Error('ssr'));
-  if (!leafletPromise) {
-    leafletPromise = import('leaflet')
+  if (!mlPromise) {
+    mlPromise = import('maplibre-gl')
       .then((m: any) => {
-        const L = m.default ?? m;
-        (window as any).L = L;
-        return L;
+        const ml = m.default ?? m;
+        // Arabic / Kurdish street names need the RTL shaping plugin (served from our own domain)
+        try {
+          if (ml.getRTLTextPluginStatus?.() === 'unavailable') ml.setRTLTextPlugin('/vendor/mapbox-gl-rtl-text.js', true);
+        } catch {
+          /* already set */
+        }
+        return ml;
       })
       .catch((e) => {
-        leafletPromise = null;
+        mlPromise = null;
         throw e;
       });
   }
-  return leafletPromise;
+  return mlPromise;
 }
 
 // Current position, independent of the map: the ride flow keeps working even if map tiles fail.

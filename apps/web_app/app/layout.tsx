@@ -1,4 +1,3 @@
-import 'leaflet/dist/leaflet.css';
 import './globals.css';
 import { cookies } from 'next/headers';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';

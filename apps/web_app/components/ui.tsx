@@ -58,7 +58,7 @@ export function BackButton({ href, className = '' }: { href?: string; className?
 
 export function TopBar({ title, back, right }: { title?: string; back?: string | true; right?: React.ReactNode }) {
   return (
-    <header className="sticky top-0 z-30 bg-background/90 backdrop-blur safe-top">
+    <header className="sticky top-0 z-30 bg-background safe-top">
       <div className="h-14 px-4 flex items-center gap-3">
         {back && <BackButton href={back === true ? undefined : back} className="shadow-none bg-surface w-10 h-10" />}
         {title && <h1 className="font-extrabold text-lg flex-1 truncate">{title}</h1>}
