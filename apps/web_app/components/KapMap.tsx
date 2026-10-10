@@ -167,8 +167,9 @@ export function KapMap({
           tuneStyle(map, styleRef.current.arabic);
           addRoute(map);
           setRouteData(map, routeRef.current);
+          // show the map as soon as the style is in; tiles stream in after
+          if (!cancelled) setReady(true);
         });
-        map.once('load', () => !cancelled && setReady(true));
         map.on('error', (e: any) => {
           // only treat it as fatal if the style itself never arrives
           if (!map.isStyleLoaded() && /style/i.test(String(e?.error?.message ?? ''))) setFailed(true);

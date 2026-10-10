@@ -59,7 +59,7 @@ export function loadMapLibre(): Promise<any> {
         const ml = m.default ?? m;
         // Arabic / Kurdish street names need the RTL shaping plugin (loaded on demand)
         try {
-          if (ml.getRTLTextPluginStatus?.() === 'unavailable') ml.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true);
+          if (ml.getRTLTextPluginStatus?.() === 'unavailable') ml.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js', true);
         } catch {
           /* already set */
         }
