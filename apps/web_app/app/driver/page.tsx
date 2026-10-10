@@ -6,6 +6,7 @@ import { Clock, Navigation, Phone, Power, ShieldAlert, Wallet } from 'lucide-rea
 import { KapMap, type MapMarker } from '@/components/KapMap';
 import { BackButton, Button, Field, inputCls, useToast } from '@/components/ui';
 import { KMark } from '@/components/Logo';
+import { CityPicker } from '@/components/CityPicker';
 import { useI18n } from '@/lib/i18n';
 import { sb, useProfile } from '@/lib/hooks';
 import { mapProvider, type LatLng } from '@/lib/maps';
@@ -48,9 +49,8 @@ export default function DriverPage() {
 
 /* ------------------------------------------------------------------ registration */
 function Register({ existing, onDone }: { existing: any; onDone: (d: any) => void }) {
-  const { t, pick } = useI18n();
+  const { t } = useI18n();
   const profile = useProfile();
-  const [cities, setCities] = useState<any[]>([]);
   const [f, setF] = useState({
     name: existing?.display_name ?? '',
     phone: existing?.phone ?? '',
@@ -64,9 +64,6 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    sb().from('cities').select('id,name,name_ar').eq('is_active', true).order('name').then(({ data }) => setCities(data ?? []));
-  }, []);
   useEffect(() => {
     if (profile && !f.phone) setF((x) => ({ ...x, phone: profile.phone_number ?? '', name: x.name || profile.first_name || '' }));
   }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -111,14 +108,7 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
           <input value={f.phone} onChange={set('phone')} className={inputCls} type="tel" dir="ltr" />
         </Field>
         <Field label={t('driver.city')}>
-          <select value={f.city} onChange={set('city')} className={inputCls} required>
-            <option value="">—</option>
-            {cities.map((c) => (
-              <option key={c.id} value={c.id}>
-                {pick(c.name_ar, c.name)}
-              </option>
-            ))}
-          </select>
+          <CityPicker variant="field" value={f.city ? Number(f.city) : null} onChange={(id) => setF((x) => ({ ...x, city: String(id) }))} />
         </Field>
         <div>
           <p className="text-sm font-bold mb-1.5">{t('driver.vehicle_type')}</p>

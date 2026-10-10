@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { CityOptions } from '@/components/CityPicker';
 import { Modal, PageHead, Panel, cellInput } from '@/components/admin';
 import { StoreMeta } from '@/components/StoreMeta';
-import { Button, Chip, Field, Switch, inputCls, useToast } from '@/components/ui';
+import { Button, Field, Switch, inputCls, useToast } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
 import { FOOD_CATS, MARKET_CATS } from '@/lib/jobs';
@@ -27,7 +28,7 @@ export default function StoresAdmin() {
   }, []);
   useEffect(() => {
     load();
-    sb().from('cities').select('id,name,name_ar,latitude,longitude,countries(currency_code)').order('name').then(({ data }) => setCities(data ?? []));
+    sb().from('cities').select('id,name,name_ar,country_id,sort,latitude,longitude,countries(id,code,name,name_ar,currency_code)').order('country_id').order('sort').order('name').then(({ data }) => setCities(data ?? []));
   }, [load]);
 
   async function patch(id: number, values: any) {
@@ -71,14 +72,10 @@ export default function StoresAdmin() {
         }
       />
       <div className="flex flex-wrap gap-2 mb-4">
-        <Chip active={city === 'all'} onClick={() => setCity('all')}>
-          {t('common.all')}
-        </Chip>
-        {cities.map((c) => (
-          <Chip key={c.id} active={city === c.id} onClick={() => setCity(c.id)}>
-            {pick(c.name_ar, c.name)}
-          </Chip>
-        ))}
+        <select value={city} onChange={(e) => setCity(e.target.value === 'all' ? 'all' : Number(e.target.value))} className={`${inputCls} h-11 max-w-xs font-bold`} aria-label={t('admin.stores.city')}>
+          <option value="all">{t('common.all')}</option>
+          <CityOptions cities={cities} />
+        </select>
       </div>
 
       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -127,11 +124,7 @@ export default function StoresAdmin() {
             </Field>
             <Field label={t('admin.stores.city')}>
               <select value={edit.city_id ?? ''} onChange={set('city_id')} className={inputCls}>
-                {cities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {pick(c.name_ar, c.name)}
-                  </option>
-                ))}
+                <CityOptions cities={cities} />
               </select>
             </Field>
             <Field label={t('admin.stores.category')}>

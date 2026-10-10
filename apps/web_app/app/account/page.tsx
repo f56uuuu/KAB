@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Bell, Briefcase, Car, ChevronLeft, Headphones, Home as HomeIcon, LayoutDashboard, LogOut, Moon, Phone, Sun, SunMoon } from 'lucide-react';
+import { Bell, Briefcase, Car, ChevronLeft, Headphones, Home as HomeIcon, LogOut, Moon, Phone, Sun, SunMoon } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { Button, TopBar, inputCls, useToast } from '@/components/ui';
 import { KMark } from '@/components/Logo';
@@ -64,7 +64,6 @@ export default function AccountPage() {
     window.location.assign('/login');
   }
 
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
   const themes: { v: ThemePref; label: string; Icon: typeof Sun }[] = [
     { v: 'light', label: t('account.theme.light'), Icon: Sun },
     { v: 'dark', label: t('account.theme.dark'), Icon: Moon },
@@ -164,7 +163,6 @@ export default function AccountPage() {
         <section className="rounded-2xl border border-border divide-y divide-border overflow-hidden">
           <Row href="/notifications" Icon={Bell} label={t('account.notifications')} />
           <Row href="/driver" Icon={Car} label={t('account.drive')} />
-          {isAdmin && <Row href="/admin" Icon={LayoutDashboard} label={t('account.admin')} />}
           <Row
             href={support ? `tel:${support}` : '#'}
             Icon={Headphones}

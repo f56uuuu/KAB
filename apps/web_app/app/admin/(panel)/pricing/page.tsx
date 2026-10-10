@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { PageHead, Panel, cellInput } from '@/components/admin';
-import { Button, Chip, useToast } from '@/components/ui';
+import { Button, useToast } from '@/components/ui';
+import { CityOptions } from '@/components/CityPicker';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
 
@@ -21,7 +22,7 @@ const SETTINGS = [
 ] as const;
 
 export default function PricingAdmin() {
-  const { t, pick } = useI18n();
+  const { t } = useI18n();
   const [cities, setCities] = useState<any[]>([]);
   const [city, setCity] = useState<number | null>(null);
   const [rules, setRules] = useState<any[]>([]);
@@ -32,7 +33,9 @@ export default function PricingAdmin() {
   useEffect(() => {
     sb()
       .from('cities')
-      .select('id,name,name_ar,countries(currency_code)')
+      .select('id,name,name_ar,country_id,sort,latitude,longitude,countries(id,code,name,name_ar,currency_code)')
+      .order('country_id')
+      .order('sort')
       .order('name')
       .then(({ data }) => {
         setCities(data ?? []);
@@ -80,12 +83,10 @@ export default function PricingAdmin() {
   return (
     <>
       <PageHead title={t('admin.nav.pricing')} sub={t('admin.pricing.hint')} />
-      <div className="flex flex-wrap gap-2 mb-4">
-        {cities.map((c) => (
-          <Chip key={c.id} active={city === c.id} onClick={() => setCity(c.id)}>
-            {pick(c.name_ar, c.name)}
-          </Chip>
-        ))}
+      <div className="mb-4 max-w-xs">
+        <select value={city ?? ''} onChange={(e) => setCity(Number(e.target.value))} className={`${cellInput} h-11 font-bold`} aria-label={t('admin.stores.city')}>
+          <CityOptions cities={cities} />
+        </select>
       </div>
 
       <Panel className="overflow-x-auto">

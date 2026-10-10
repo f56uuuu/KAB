@@ -15,10 +15,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const adminArea = path.startsWith('/admin') || path.startsWith('/superadmin');
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // the admin area has its own session cookie, isolated from the customer app
+      ...(adminArea ? { cookieOptions: { name: 'sb-kap-admin' } } : {}),
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value;
@@ -42,7 +45,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(user ? '/home' : '/login', request.url));
   }
   if (!user && !isPublic) {
-    const to = path.startsWith('/admin') ? '/admin/login' : '/login';
+    const to = adminArea ? '/superadmin' : '/login';
     const url = new URL(to, request.url);
     if (path !== '/home') url.searchParams.set('next', path);
     return NextResponse.redirect(url);

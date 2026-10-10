@@ -53,7 +53,6 @@ export function AdminLogin({ superMode = false }: { superMode?: boolean }) {
         if (error) return setMsg({ kind: 'error', text: error.message });
         if (!data.session) return setMsg({ kind: 'info', text: t('admin.check_email') });
       } else {
-        await s.auth.signOut().catch(() => {});
         const { error } = await s.auth.signInWithPassword({ email: loginEmail(id), password });
         if (error) return setMsg({ kind: 'error', text: /confirm/i.test(error.message) ? t('admin.check_email') : t('admin.bad_login') });
       }

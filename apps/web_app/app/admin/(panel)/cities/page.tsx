@@ -16,7 +16,7 @@ export default function CitiesAdmin() {
 
   const load = useCallback(() => {
     sb().from('countries').select('*').order('id').then(({ data }) => setCountries(data ?? []));
-    sb().from('cities').select('*').order('name').then(({ data }) => setCities(data ?? []));
+    sb().from('cities').select('*').order('sort').order('name').then(({ data }) => setCities(data ?? []));
   }, []);
   useEffect(load, [load]);
 

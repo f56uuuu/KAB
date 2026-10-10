@@ -8,6 +8,8 @@ import { BottomNav } from '@/components/BottomNav';
 import { Chip, Empty, TopBar } from '@/components/ui';
 import { StoreMeta } from '@/components/StoreMeta';
 import { CartBar } from '@/components/CartBar';
+import { CityPicker } from '@/components/CityPicker';
+import { useCities } from '@/lib/cities';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
 import { useMyLocation } from '@/lib/location';
@@ -36,21 +38,12 @@ function Food() {
   const market = params.get('type') === 'market';
   const cats = market ? MARKET_CATS : FOOD_CATS;
   const loc = useMyLocation();
-  const [cities, setCities] = useState<any[]>([]);
+  const cities = useCities();
   const [cityId, setCityId] = useState<number | null>(null);
   const [currency, setCurrency] = useState('IQD');
   const [stores, setStores] = useState<any[] | null>(null);
   const [cat, setCat] = useState<string>('all');
   const [q, setQ] = useState('');
-
-  useEffect(() => {
-    sb()
-      .from('cities')
-      .select('id,name,name_ar,country_id,countries(currency_code)')
-      .eq('is_active', true)
-      .order('name')
-      .then(({ data }) => setCities(data ?? []));
-  }, []);
 
   // city: saved choice, else nearest to the user
   useEffect(() => {
@@ -102,23 +95,11 @@ function Food() {
     <main className="min-h-screen bg-background pb-40">
       <TopBar back="/home" title={market ? t('market.title') : t('food.title')} />
       <div className="max-w-md mx-auto px-5 flex flex-col gap-4">
-        <label className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm">
           <MapPin className="w-4 h-4 shrink-0" />
           <span className="text-muted">{t('food.delivering_in')}</span>
-          <select
-            value={cityId ?? ''}
-            onChange={(e) => changeCity(Number(e.target.value))}
-            className="bg-transparent font-extrabold outline-none"
-            aria-label={t('food.change_city')}
-          >
-            {!cityId && <option value="">…</option>}
-            {cities.map((c) => (
-              <option key={c.id} value={c.id}>
-                {pick(c.name_ar, c.name)}
-              </option>
-            ))}
-          </select>
-        </label>
+          <CityPicker value={cityId} onChange={(id) => changeCity(id)} />
+        </div>
 
         <div className="h-12 rounded-2xl bg-surface flex items-center gap-2 px-4">
           <Search className="w-5 h-5 text-muted" />

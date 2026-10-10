@@ -1,10 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createSupabaseBrowserClient } from './supabase-browser';
+import { createSupabaseBrowserClient, isAdminPath } from './supabase-browser';
 
 let client: ReturnType<typeof createSupabaseBrowserClient> | null = null;
+let adminClient: ReturnType<typeof createSupabaseBrowserClient> | null = null;
+/** Customer/driver pages and admin pages use separate sessions, so signing in to one never affects the other. */
 export function sb() {
+  if (typeof window !== 'undefined' && isAdminPath(window.location.pathname)) {
+    adminClient ??= createSupabaseBrowserClient(true);
+    return adminClient;
+  }
   client ??= createSupabaseBrowserClient();
   return client;
 }
