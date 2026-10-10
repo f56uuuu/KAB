@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Pages anyone can open. Everything else needs a real Supabase session (validated server-side).
-const PUBLIC = ['/welcome', '/login', '/admin/login', '/superadmin', '/auth'];
+const PUBLIC = ['/welcome', '/login', '/admin/login', '/superadmin', '/auth', '/map', '/offline', '/privacy', '/terms', '/delete-account', '/support'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
@@ -58,5 +58,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // everything except static assets, Next internals and the map API route
-  matcher: ['/((?!_next/|api/|favicon|icon|apple-icon|manifest|sw.js|icon-512.png|.*\\.(?:png|jpg|svg|webp|ico)$).*)'],
+  matcher: ['/((?!_next/|api/|favicon|icon|apple-icon|manifest|sw.js|icon-512.png|\\.well-known/|robots.txt|sitemap.xml|.*\\.(?:png|jpg|svg|webp|ico)$).*)'],
 };

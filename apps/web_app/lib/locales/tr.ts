@@ -518,4 +518,11 @@ export const tr: Partial<Record<Key, string>> = {
   'home.drive_cta': 'Hemen kaydol',
   'maint.title': 'Hemen döneceğiz',
   'maint.sub': 'KAP güncelleniyor. Lütfen birkaç dakika sonra tekrar dene.',
+  'home.mymap': 'Haritam',
+  'home.mymap_sub': 'Ev, iş ve rotalar — çevrimdışı çalışır',
+  'account.mymap': 'Haritam (çevrimdışı)',
+  'legal.privacy': 'Gizlilik politikası',
+  'legal.terms': 'Kullanım koşulları',
+  'legal.delete': 'Hesabı sil',
+  'legal.title': 'Yasal',
 };

@@ -518,4 +518,11 @@ export const ku: Partial<Record<Key, string>> = {
   'home.drive_cta': 'ئێستا تۆمار بکە',
   'maint.title': 'زوو دەگەڕێینەوە',
   'maint.sub': 'KAP نوێ دەکرێتەوە. تکایە دوای چەند خولەکێک دووبارە هەوڵ بدەرەوە.',
+  'home.mymap': 'نەخشەکەم',
+  'home.mymap_sub': 'ماڵ، کار و ڕێگاکان — بێ ئینتەرنێت کار دەکات',
+  'account.mymap': 'نەخشەکەم (ئۆفلاین)',
+  'legal.privacy': 'سیاسەتی تایبەتمەندی',
+  'legal.terms': 'مەرجەکانی بەکارهێنان',
+  'legal.delete': 'سڕینەوەی هەژمار',
+  'legal.title': 'یاسایی',
 };

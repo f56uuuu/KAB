@@ -541,4 +541,11 @@ export const ar: Partial<Record<Key, string>> = {
   'home.drive_cta': 'سجّل الآن',
   'maint.title': 'سنعود قريبًا',
   'maint.sub': 'نحدّث كاب الآن. حاول مرة أخرى بعد دقائق.',
+  'home.mymap': 'خرائطي',
+  'home.mymap_sub': 'البيت والعمل والمسارات — تعمل بدون إنترنت',
+  'account.mymap': 'خرائطي (بدون إنترنت)',
+  'legal.privacy': 'سياسة الخصوصية',
+  'legal.terms': 'شروط الاستخدام',
+  'legal.delete': 'حذف الحساب',
+  'legal.title': 'قانوني',
 };

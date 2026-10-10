@@ -178,6 +178,18 @@ export default function HomePage() {
           ))}
         </section>
 
+        {/* personal offline map */}
+        <section className="px-4 mt-3">
+          <Link href="/map" className="h-[76px] rounded-3xl bg-ink text-white flex items-center gap-4 px-5 active:scale-[.99] transition-transform">
+            <span aria-hidden className="text-[38px] leading-none">🗺️</span>
+            <span className="flex-1 min-w-0">
+              <span className="block font-black text-lg">{t('home.mymap')}</span>
+              <span className="block text-xs text-white/70 truncate">{t('home.mymap_sub')}</span>
+            </span>
+            <ChevronLeft className="w-5 h-5 text-accent ltr:rotate-180" />
+          </Link>
+        </section>
+
         {/* active jobs */}
         {active.length > 0 && (
           <section className="px-4 mt-4 flex flex-col gap-2">

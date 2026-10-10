@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Bell, Briefcase, Car, ChevronLeft, Headphones, Home as HomeIcon, LogOut, Moon, Phone, Sun, SunMoon } from 'lucide-react';
+import { Bell, Briefcase, Car, ChevronLeft, FileText, Headphones, Home as HomeIcon, LogOut, Map as MapIcon, Moon, Phone, Shield, Sun, SunMoon } from 'lucide-react';
+import { DeleteAccountBox } from '@/components/DeleteAccountBox';
 import { BottomNav } from '@/components/BottomNav';
 import { Button, TopBar, inputCls, useToast } from '@/components/ui';
 import { KMark } from '@/components/Logo';
@@ -161,14 +162,21 @@ export default function AccountPage() {
 
         {/* links */}
         <section className="rounded-2xl border border-border divide-y divide-border overflow-hidden">
+          <Row href="/map" Icon={MapIcon} label={t('account.mymap')} />
           <Row href="/notifications" Icon={Bell} label={t('account.notifications')} />
           <Row href="/driver" Icon={Car} label={t('account.drive')} />
           <Row
-            href={support ? `tel:${support}` : '#'}
+            href="/support"
             Icon={Headphones}
             label={t('account.support')}
             sub={support ? t('account.support_sub', { phone: support }) : undefined}
           />
+        </section>
+
+        {/* legal */}
+        <section className="rounded-2xl border border-border divide-y divide-border overflow-hidden">
+          <Row href="/privacy" Icon={Shield} label={t('legal.privacy')} />
+          <Row href="/terms" Icon={FileText} label={t('legal.terms')} />
         </section>
 
         {/* sign out */}
@@ -190,6 +198,8 @@ export default function AccountPage() {
             </div>
           </div>
         )}
+
+        <DeleteAccountBox compact />
 
         <div className="flex flex-col items-center gap-2 py-4 text-muted">
           <KMark size={32} />

@@ -559,6 +559,13 @@ export const en = {
   'home.drive_cta': 'Register now',
   'maint.title': 'We’ll be right back',
   'maint.sub': 'KAP is getting an upgrade. Please try again in a few minutes.',
+  'home.mymap': 'My map',
+  'home.mymap_sub': 'Home, work and routes — works offline',
+  'account.mymap': 'My map (offline)',
+  'legal.privacy': 'Privacy policy',
+  'legal.terms': 'Terms of use',
+  'legal.delete': 'Delete account',
+  'legal.title': 'Legal',
 } as const;
 
 export type Key = keyof typeof en;

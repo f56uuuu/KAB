@@ -12,6 +12,7 @@ import { sb } from '@/lib/hooks';
 import { useMyLocation } from '@/lib/location';
 import { mapProvider, type Place, type Route } from '@/lib/maps';
 import { errorCode, money } from '@/lib/format';
+import { trips as tripStore } from '@/lib/offline';
 
 const TYPES = [
   { key: 'documents', emoji: '📄' },
@@ -61,6 +62,7 @@ export default function SendPage() {
       const r = await mapProvider.route(from.point, to.point).catch(() => null);
       if (!alive) return;
       setRoute(r);
+      if (r?.path?.length) tripStore.save({ from: from.point, to: to.point, toName: to.label || '—', path: r.path, km: r.distanceKm, min: r.durationMin });
       setFitKey((k) => k + 1);
       const { data, error: err } = await sb().rpc('quote_trip', {
         p_service: 'DELIVERY',

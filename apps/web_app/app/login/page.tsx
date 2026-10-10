@@ -97,7 +97,16 @@ export default function LoginPage() {
         <Button type="submit" loading={loading} full>
           {loading ? t('login.signing_in') : t('login.continue')}
         </Button>
-        <p className="text-xs text-muted text-center mt-auto pb-2">{t('login.terms')}</p>
+        <p className="text-xs text-muted text-center mt-auto pb-2 leading-6">
+          {t('login.terms')}{' '}
+          <Link href="/terms" className="underline font-bold">
+            {t('legal.terms')}
+          </Link>
+          {' · '}
+          <Link href="/privacy" className="underline font-bold">
+            {t('legal.privacy')}
+          </Link>
+        </p>
       </form>
     </main>
   );

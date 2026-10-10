@@ -12,6 +12,7 @@ import { sb } from '@/lib/hooks';
 import { useMyLocation } from '@/lib/location';
 import { mapProvider, type LatLng, type Place, type Route } from '@/lib/maps';
 import { errorCode, money } from '@/lib/format';
+import { trips as tripStore } from '@/lib/offline';
 
 type Quote = { currency: string; km: number; min: number; options: { vehicle_type: string; amount: number; surge: number; cancellation_fee: number }[] };
 const VEHICLE_EMOJI: Record<string, string> = { ECONOMY: '🚗', COMFORT: '🚙', XL: '🚐' };
@@ -82,6 +83,7 @@ function NewRide() {
       const r = await mapProvider.route(pickup, dest.point).catch(() => null);
       if (!alive) return;
       setRoute(r);
+      if (r?.path?.length) tripStore.save({ from: pickup, to: dest.point, toName: dest.label || query || '—', path: r.path, km: r.distanceKm, min: r.durationMin });
       setFitKey((k) => k + 1);
       const { data, error: err } = await sb().rpc('quote_trip', {
         p_service: 'RIDE',

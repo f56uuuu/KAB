@@ -2,6 +2,7 @@ import './globals.css';
 import { cookies } from 'next/headers';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 import { MaintenanceGate } from '@/components/MaintenanceGate';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { I18nProvider } from '@/lib/i18n';
 import { isLang, langInfo, type Lang } from '@/lib/langs';
 import { ThemeProvider, type ThemePref } from '@/lib/theme';
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <I18nProvider initialLang={lang}>
             <ServiceWorkerRegistration />
             <MaintenanceGate />
+            <OfflineBanner />
             {children}
           </I18nProvider>
         </ThemeProvider>
