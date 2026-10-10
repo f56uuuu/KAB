@@ -32,12 +32,13 @@ type Props = {
   interactive?: boolean;
 };
 
-// Minimal basemaps (CARTO Positron by day, Dark Matter by night): few colours, clear streets.
+// Minimal grey basemaps (no API key): a plain base plus a separate street-name layer.
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas';
 const TILES = {
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light: [`${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`, `${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`],
+  dark: [`${ESRI}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`, `${ESRI}/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`],
 };
-const ATTR = '© OpenStreetMap © CARTO';
+const ATTR = 'Esri, HERE, Garmin, © OpenStreetMap';
 
 function carSvg(color: string) {
   return `<svg width="34" height="34" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0D0D0F" stroke="#fff" stroke-width="2"/>
@@ -128,12 +129,11 @@ export function KapMap({
     const map = mapRef.current;
     if (!ready || !L || !map) return;
     tileRef.current?.remove();
-    tileRef.current = L.tileLayer(dark ? TILES.dark : TILES.light, {
-      maxZoom: 19,
-      subdomains: 'abcd',
-      attribution: ATTR,
-      detectRetina: true,
-    }).addTo(map);
+    const [base, labels] = dark ? TILES.dark : TILES.light;
+    tileRef.current = L.layerGroup([
+      L.tileLayer(base, { maxZoom: 19, maxNativeZoom: 16, attribution: ATTR }),
+      L.tileLayer(labels, { maxZoom: 19, maxNativeZoom: 16 }),
+    ]).addTo(map);
   }, [ready, dark]);
 
   // markers
