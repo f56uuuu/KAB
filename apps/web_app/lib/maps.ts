@@ -57,9 +57,9 @@ export function loadMapLibre(): Promise<any> {
     mlPromise = import('maplibre-gl')
       .then((m: any) => {
         const ml = m.default ?? m;
-        // Arabic / Kurdish street names need the RTL shaping plugin (served from our own domain)
+        // Arabic / Kurdish street names need the RTL shaping plugin (loaded on demand)
         try {
-          if (ml.getRTLTextPluginStatus?.() === 'unavailable') ml.setRTLTextPlugin('/vendor/mapbox-gl-rtl-text.js', true);
+          if (ml.getRTLTextPluginStatus?.() === 'unavailable') ml.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true);
         } catch {
           /* already set */
         }
