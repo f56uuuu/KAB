@@ -2,9 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* KAP colour tokens — RGB triplets so Tailwind opacity modifiers work.
+   Light = white + deep black text; dark = the brand's native black. Yellow is the only accent. */
 :root {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: 255 255 255;
+  --surface: 244 244 245;
+  --raised: 255 255 255;
+  --fg: 13 13 15;
+  --muted: 110 110 118;
+  --border: 230 230 233;
+  color-scheme: light;
+}
+.dark {
+  --bg: 13 13 15;
+  --surface: 24 24 28;
+  --raised: 32 32 37;
+  --fg: 255 255 255;
+  --muted: 161 161 161;
+  --border: 44 44 50;
+  color-scheme: dark;
 }
 
 html {
@@ -13,8 +29,53 @@ html {
 
 body {
   margin: 0;
-  background-color: #FFFFFF;
-  color: #0D0D0F;
-  font-family: 'Tajawal', sans-serif;
+  background: rgb(var(--bg));
+  color: rgb(var(--fg));
+  font-family: 'Tajawal', system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid #ffd100;
+  outline-offset: 2px;
+}
+
+/* Signature: the diagonal yellow stripe from the K mark and the taxi livery */
+.kap-slash {
+  position: relative;
+  overflow: hidden;
+}
+.kap-slash::after {
+  content: '';
+  position: absolute;
+  inset-block: -20%;
+  inset-inline-end: -18%;
+  width: 46%;
+  background: #ffd100;
+  transform: skewX(-28deg);
+  pointer-events: none;
+}
+/* narrower stripe for headers that carry long text */
+.kap-slash.thin::after { width: 20%; inset-inline-end: -8%; }
+
+[dir='rtl'] .kap-slash::after {
+  transform: skewX(28deg);
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px); }
+.safe-top { padding-top: max(env(safe-area-inset-top, 0px), 12px); }
+
+/* Leaflet polish */
+.leaflet-container { font-family: inherit; background: rgb(var(--surface)); }
+.leaflet-control-attribution { font-size: 9px !important; opacity: 0.7; }
+.dark .leaflet-control-attribution { background: rgb(13 13 15 / 0.6) !important; color: #a1a1a1; }
+.dark .leaflet-control-attribution a { color: #d4d4d4; }
+.kap-marker { transition: transform 0.9s linear; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

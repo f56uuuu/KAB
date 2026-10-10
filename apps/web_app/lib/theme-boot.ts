@@ -1,0 +1,1 @@
+export const themeBootScript = `(function(){try{var m=document.cookie.match(/(?:^|; )kap_theme=([^;]+)/);var p=m?decodeURIComponent(m[1]):'system';var d=p==='dark'||(p==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
