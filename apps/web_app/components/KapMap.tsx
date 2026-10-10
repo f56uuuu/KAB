@@ -32,9 +32,9 @@ type Props = {
   interactive?: boolean;
 };
 
-// Clean, high-contrast basemaps (CARTO): bright streets by day, dark by night.
+// Minimal basemaps (CARTO Positron by day, Dark Matter by night): few colours, clear streets.
 const TILES = {
-  light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
 };
 const ATTR = '© OpenStreetMap © CARTO';

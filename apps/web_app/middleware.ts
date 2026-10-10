@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Pages anyone can open. Everything else needs a real Supabase session (validated server-side).
-const PUBLIC = ['/welcome', '/login', '/admin/login', '/auth'];
+const PUBLIC = ['/welcome', '/login', '/admin/login', '/superadmin', '/auth'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });

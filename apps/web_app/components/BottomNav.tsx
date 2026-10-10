@@ -26,12 +26,11 @@ export function BottomNav() {
               key={href}
               href={href}
               aria-current={active ? 'page' : undefined}
-              className="relative flex flex-col items-center gap-1 pt-2.5 pb-1 text-[11px] font-bold"
+              className="flex flex-col items-center gap-1 pt-2 pb-1 text-[11px] font-bold"
             >
-              {active && (
-                <span aria-hidden className="absolute top-0 h-1 w-8 bg-accent" style={{ transform: 'skewX(-28deg)' }} />
-              )}
-              <Icon className={`w-6 h-6 ${active ? 'text-fg' : 'text-muted'}`} strokeWidth={active ? 2.4 : 2} />
+              <span className={`h-8 w-14 rounded-full flex items-center justify-center transition-colors ${active ? 'bg-accent' : ''}`}>
+                <Icon className={`w-6 h-6 ${active ? 'text-ink' : 'text-muted'}`} strokeWidth={active ? 2.4 : 2} />
+              </span>
               <span className={active ? 'text-fg' : 'text-muted'}>{t(label)}</span>
             </Link>
           );

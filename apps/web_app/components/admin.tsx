@@ -7,10 +7,12 @@ import {
   BadgePercent,
   Building2,
   Car,
+  History,
+  Megaphone,
+  Settings2,
   Gauge,
   Languages,
   LogOut,
-  Map as MapIcon,
   Moon,
   ReceiptText,
   ShieldAlert,
@@ -37,7 +39,10 @@ const NAV = [
   { href: '/admin/promos', key: 'admin.nav.promos', Icon: BadgePercent },
   { href: '/admin/users', key: 'admin.nav.users', Icon: Users },
   { href: '/admin/cities', key: 'admin.nav.cities', Icon: Building2 },
-] as const;
+  { href: '/admin/broadcast', key: 'admin.nav.broadcast', Icon: Megaphone },
+  { href: '/admin/system', key: 'admin.nav.system', Icon: Settings2, superOnly: true },
+  { href: '/admin/audit', key: 'admin.nav.audit', Icon: History, superOnly: true },
+] as { href: string; key: string; Icon: typeof Gauge; superOnly?: boolean }[];
 
 type Me = { id: string; email: string | null; role: string; name: string };
 const MeCtx = createContext<Me | null>(null);
@@ -54,17 +59,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       const {
         data: { user },
       } = await sb().auth.getUser();
-      if (!user) return window.location.assign('/admin/login');
+      if (!user) return window.location.assign('/superadmin');
       const { data } = await sb().from('profiles').select('role,first_name,is_active').eq('id', user.id).maybeSingle();
       const role = (data as any)?.role;
       if (role !== 'admin' && role !== 'super_admin') return setMe('denied');
-      setMe({ id: user.id, email: user.email ?? null, role, name: (data as any)?.first_name || user.email || 'Admin' });
+      setMe({ id: user.id, email: user.email ?? null, role, name: (user.user_metadata as any)?.username || (data as any)?.first_name || user.email || 'Admin' });
     })();
   }, []);
 
   async function signOut() {
     await sb().auth.signOut();
-    window.location.assign('/admin/login');
+    window.location.assign('/superadmin');
   }
 
   if (me === null)
@@ -89,6 +94,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </main>
     );
 
+  const nav = NAV.filter((n) => !n.superOnly || me.role === 'super_admin');
   const nextLang = LANGS[(LANGS.findIndex((l) => l.code === lang) + 1) % LANGS.length];
   const active = (href: string) => (href === '/admin' ? path === '/admin' : path.startsWith(href));
 
@@ -99,10 +105,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-ink text-white sticky top-0 h-screen">
           <div className="px-6 h-20 flex items-center gap-3 border-b border-white/10">
             <KMark size={36} />
-            <span className="font-black text-lg">{t('admin.title')}</span>
+            <span className="flex flex-col leading-tight">
+              <span className="font-black text-lg">{t('admin.title')}</span>
+              <span className="text-[11px] font-extrabold text-accent">{me.role === 'super_admin' ? 'SUPER ADMIN' : 'ADMIN'}</span>
+            </span>
           </div>
           <nav className="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
-            {NAV.map(({ href, key, Icon }) => (
+            {nav.map(({ href, key, Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -117,7 +126,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </nav>
           <div className="p-3 border-t border-white/10 flex flex-col gap-1">
             <p className="px-3 text-xs text-white/50 truncate" dir="ltr">
-              {me.email}
+              {me.name}
             </p>
             <div className="flex gap-1">
               <button onClick={() => setPref(dark ? 'light' : 'dark')} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center" aria-label={t('account.theme')}>
@@ -150,7 +159,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
           <nav className="flex gap-1 overflow-x-auto no-scrollbar px-3 pb-2">
-            {NAV.map(({ href, key }) => (
+            {nav.map(({ href, key }) => (
               <Link
                 key={href}
                 href={href}
@@ -245,6 +254,3 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
 /** compact input for dense admin forms */
 export const cellInput = 'w-full h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-fg';
 
-export function MapIconBadge() {
-  return <MapIcon className="w-4 h-4" />;
-}
