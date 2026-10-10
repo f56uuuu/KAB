@@ -162,6 +162,12 @@ export function KapMap({
         });
         map.touchZoomRotate?.disableRotation?.();
         map.addControl(new ml.AttributionControl({ compact: true }), 'bottom-left');
+        // keep the canvas matched to its box (bottom sheets, rotation, late layout)
+        if (typeof ResizeObserver !== 'undefined' && el.current) {
+          const ro = new ResizeObserver(() => map.resize());
+          ro.observe(el.current);
+          map.once('remove', () => ro.disconnect());
+        }
         map.on('click', (e: any) => cbs.current.onClick?.({ lat: e.lngLat.lat, lng: e.lngLat.lng }));
         map.on('style.load', () => {
           tuneStyle(map, styleRef.current.arabic);
@@ -278,7 +284,8 @@ export function KapMap({
 
   return (
     <div className={`${/\b(absolute|fixed)\b/.test(className) ? '' : 'relative'} ${className}`}>
-      <div ref={el} className="absolute inset-0 z-0" />
+      {/* inline position: maplibre-gl.css sets .maplibregl-map { position: relative } which would collapse the container */}
+      <div ref={el} style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
       {!ready && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-muted bg-surface px-8 text-center">
           {failed ? t('map.unavailable') : t('map.loading')}
