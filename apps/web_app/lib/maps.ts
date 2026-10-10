@@ -63,6 +63,16 @@ export function loadMapLibre(): Promise<any> {
         } catch {
           /* already set */
         }
+        // kapc:// = https fetched on the main thread (cached by the service worker → map works offline)
+        try {
+          ml.addProtocol('kapc', async (params: { url: string }, ac: AbortController) => {
+            const res = await fetch('https://' + params.url.slice(7), { signal: ac.signal });
+            if (!res.ok) throw new Error(`tile ${res.status}`);
+            return { data: await res.arrayBuffer() };
+          });
+        } catch {
+          /* already registered */
+        }
         return ml;
       })
       .catch((e) => {

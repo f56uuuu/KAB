@@ -154,6 +154,9 @@ export function KapMap({
           zoom,
           interactive,
           attributionControl: false,
+          // vector tiles and fonts go through the main thread so the service worker can keep them for offline use
+          transformRequest: (url: string, kind: string) =>
+            url.startsWith('https://tiles.openfreemap.org/') && (kind === 'Tile' || kind === 'Glyphs') ? { url: 'kapc://' + url.slice(8) } : undefined,
           pitchWithRotate: false,
           dragRotate: false,
           touchPitch: false,
@@ -286,6 +289,18 @@ export function KapMap({
     <div className={`${/\b(absolute|fixed)\b/.test(className) ? '' : 'relative'} ${className}`}>
       {/* inline position: maplibre-gl.css sets .maplibregl-map { position: relative } which would collapse the container */}
       <div ref={el} style={{ position: 'absolute', inset: 0, zIndex: 0 }} />
+      {ready && interactive && (
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer"
+          dir="ltr"
+          className="absolute z-[1] start-1 text-[9px] leading-none text-ink/70 bg-white/70 rounded px-1 py-0.5"
+          style={{ bottom: bottomInset + 4 }}
+        >
+          © OpenStreetMap
+        </a>
+      )}
       {!ready && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-muted bg-surface px-8 text-center">
           {failed ? t('map.unavailable') : t('map.loading')}
