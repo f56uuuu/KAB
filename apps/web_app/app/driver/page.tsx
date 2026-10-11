@@ -17,6 +17,7 @@ const VEHICLES = [
   { v: 'COMFORT', emoji: '🚙' },
   { v: 'XL', emoji: '🚐' },
   { v: 'BIKE', emoji: '🛵' },
+  { v: 'BICYCLE', emoji: '🚲' },
 ];
 const KIND_EMOJI: Record<string, string> = { ride: '🚖', delivery: '📦', order: '🛍️' };
 
@@ -72,7 +73,7 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.name.trim() || !f.plate.trim() || !f.city) return setError(t('error.missing_fields'));
+    if (!f.name.trim() || (!f.plate.trim() && f.type !== 'BICYCLE') || !f.city) return setError(t('error.missing_fields'));
     setBusy(true);
     setError(null);
     const { data, error: err } = await sb().rpc('driver_register', {
@@ -112,7 +113,7 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
         </Field>
         <div>
           <p className="text-sm font-bold mb-1.5">{t('driver.vehicle_type')}</p>
-          <div className="grid grid-cols-4 gap-2" role="radiogroup">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2" role="radiogroup">
             {VEHICLES.map(({ v, emoji }) => (
               <button
                 type="button"
@@ -140,9 +141,11 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
           <Field label={t('driver.color')}>
             <input value={f.color} onChange={set('color')} className={inputCls} />
           </Field>
-          <Field label={t('driver.plate')}>
-            <input value={f.plate} onChange={set('plate')} className={inputCls} required dir="auto" />
-          </Field>
+          {f.type !== 'BICYCLE' && (
+            <Field label={t('driver.plate')}>
+              <input value={f.plate} onChange={set('plate')} className={inputCls} required dir="auto" />
+            </Field>
+          )}
         </div>
         {error && (
           <p role="alert" className="text-danger text-sm font-medium">
@@ -325,7 +328,7 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
 
   const markers = useMemo<MapMarker[]>(() => {
     const m: MapMarker[] = [];
-    if (pos) m.push({ id: 'me', kind: me.vehicle_type === 'BIKE' ? 'bike' : 'car', ...pos });
+    if (pos) m.push({ id: 'me', kind: me.vehicle_type === 'BIKE' || me.vehicle_type === 'BICYCLE' ? 'bike' : 'car', emoji: me.vehicle_type === 'BICYCLE' ? '🚲' : undefined, ...pos });
     if (job) {
       m.push({ id: 'from', kind: job.kind === 'order' ? 'store' : 'pickup', lat: +job.from_lat, lng: +job.from_lng, emoji: '🛍️' });
       m.push({ id: 'to', kind: 'dropoff', lat: +job.to_lat, lng: +job.to_lng });

@@ -4,7 +4,8 @@
 
 export type LatLng = { lat: number; lng: number };
 export type Place = { label: string; point: LatLng };
-export type Route = { distanceKm: number; durationMin: number; path: [number, number][] };
+export type RouteStep = { type: string; modifier?: string; exit?: number; name: string; km: number; loc: [number, number] };
+export type Route = { distanceKm: number; durationMin: number; path: [number, number][]; steps?: RouteStep[] };
 
 export interface MapProvider {
   search(query: string, near?: LatLng): Promise<Place[]>;

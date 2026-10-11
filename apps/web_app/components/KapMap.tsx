@@ -11,7 +11,7 @@ export type MapMarker = {
   id: string;
   lat: number;
   lng: number;
-  kind: 'pickup' | 'dropoff' | 'car' | 'bike' | 'store' | 'me' | 'job';
+  kind: 'pickup' | 'dropoff' | 'car' | 'bike' | 'store' | 'me' | 'job' | 'nav' | 'report';
   label?: string;
   emoji?: string;
   draggable?: boolean;
@@ -33,6 +33,8 @@ type Props = {
   onClick?: (p: LatLng) => void;
   className?: string;
   interactive?: boolean;
+  /** navigation camera: keep this point centred (low in the frame), rotated to `bearing` */
+  follow?: { lat: number; lng: number; bearing?: number; zoom?: number } | null;
 };
 
 // Vector maps from OpenFreeMap (OpenStreetMap data, free, no API key): sharp at every zoom, GPU-smooth.
@@ -57,11 +59,15 @@ function iconHtml(m: MapMarker) {
     case 'car':
       return carSvg('#FFD100');
     case 'bike':
-      return `<div style="width:38px;height:38px;border-radius:50%;background:#0D0D0F;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:19px">🛵</div>`;
+      return `<div style="width:38px;height:38px;border-radius:50%;background:#0D0D0F;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:19px">${m.emoji ?? '🛵'}</div>`;
     case 'store':
       return `<div style="width:42px;height:42px;border-radius:14px;background:#fff;border:2.5px solid #0D0D0F;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(0,0,0,.25)">${m.emoji ?? '🏪'}</div>`;
     case 'job':
       return `<div style="width:34px;height:34px;border-radius:50%;background:#FFD100;border:3px solid #0D0D0F;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.3)">${m.emoji ?? '•'}</div>`;
+    case 'nav':
+      return `<svg width="46" height="46" viewBox="0 0 46 46" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))"><circle cx="23" cy="23" r="21" fill="rgba(51,153,255,.18)"/><path d="M23 7 35 36 23 29 11 36Z" fill="#1E9BFF" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>`;
+    case 'report':
+      return `<div style="display:flex;flex-direction:column;align-items:center"><div style="width:36px;height:36px;border-radius:50%;background:#fff;border:2.5px solid #0D0D0F;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 10px rgba(0,0,0,.28)">${m.emoji ?? '⚠️'}</div><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #0D0D0F;margin-top:-1px"></div></div>`;
     case 'me':
     default:
       return `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-12px;border-radius:50%;background:rgba(66,133,244,.22)"></span><span style="position:absolute;inset:0;border-radius:50%;background:#4285F4;border:3.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)"></span></div>`;
@@ -122,6 +128,7 @@ export function KapMap({
   onClick,
   className = '',
   interactive = true,
+  follow = null,
 }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -264,8 +271,27 @@ export function KapMap({
     }
   }, [ready, route]);
 
+  // navigation camera
+  const followKey = follow ? `${follow.lat.toFixed(6)},${follow.lng.toFixed(6)},${Math.round(follow.bearing ?? 0)},${follow.zoom ?? ''}` : '';
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !follow) return;
+    const h = map.getContainer().clientHeight || 600;
+    map.easeTo({
+      center: [follow.lng, follow.lat],
+      zoom: follow.zoom ?? 17,
+      bearing: follow.bearing ?? 0,
+      // keep the car in the lower third, like a sat-nav
+      padding: { top: Math.round(h * 0.35), bottom: bottomInset, left: 0, right: 0 },
+      duration: 900,
+      easing: (t: number) => t,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, followKey]);
+
   // fit
   useEffect(() => {
+    if (follow) return;
     const ml = mlRef.current;
     const map = mapRef.current;
     if (!ready || !ml || !map) return;

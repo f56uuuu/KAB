@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'bad_point' }, { status: 400 });
       }
       const data = await upstream(
-        `${OSRM}/route/v1/driving/${fLng},${fLat};${tLng},${tLat}?overview=full&geometries=geojson`,
+        `${OSRM}/route/v1/driving/${fLng},${fLat};${tLng},${tLat}?overview=full&geometries=geojson&steps=true`,
       );
       const r = data?.routes?.[0];
       if (!r) return json(null, 300);
@@ -89,6 +89,15 @@ export async function GET(req: NextRequest) {
           distanceKm: r.distance / 1000,
           durationMin: Math.max(1, Math.ceil(r.duration / 60)),
           path: r.geometry.coordinates.map(([lo, la]: [number, number]) => [la, lo]),
+          // turn-by-turn steps for in-app navigation
+          steps: (r.legs?.[0]?.steps ?? []).map((s: any) => ({
+            type: String(s.maneuver?.type ?? ''),
+            modifier: s.maneuver?.modifier ? String(s.maneuver.modifier) : undefined,
+            exit: s.maneuver?.exit ?? undefined,
+            name: String(s.name || s.ref || ''),
+            km: Math.round((s.distance ?? 0)) / 1000,
+            loc: [s.maneuver?.location?.[1], s.maneuver?.location?.[0]],
+          })),
         },
         300,
       );

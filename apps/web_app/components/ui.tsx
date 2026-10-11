@@ -168,7 +168,7 @@ export function useToast() {
     return () => clearTimeout(t);
   }, [msg]);
   const node = msg ? (
-    <div role="status" className="fixed z-[1000] bottom-24 inset-x-0 flex justify-center px-4 pointer-events-none">
+    <div role="status" className="fixed z-[1300] bottom-24 inset-x-0 flex justify-center px-4 pointer-events-none">
       <div className="bg-ink text-white dark:bg-white dark:text-ink rounded-full px-5 py-3 text-sm font-bold shadow-float animate-slide-up">
         {msg}
       </div>

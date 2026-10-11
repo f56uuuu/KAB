@@ -11,6 +11,7 @@ import { useMyLocation } from '@/lib/location';
 import { ACTIVE, jobHref, type JobKind } from '@/lib/jobs';
 import { StoreMeta } from '@/components/StoreMeta';
 import { Tour } from '@/components/Tour';
+import { places as placeStore, type SavedPlace } from '@/lib/offline';
 
 type ActiveJob = { kind: JobKind; id: number; status: string; title: string };
 
@@ -25,6 +26,8 @@ export default function HomePage() {
   const [currency, setCurrency] = useState('IQD');
   const [active, setActive] = useState<ActiveJob[]>([]);
   const [slide, setSlide] = useState(0);
+  const [myPlaces, setMyPlaces] = useState<SavedPlace[]>([]);
+  useEffect(() => setMyPlaces(placeStore.all().filter((p) => p.kind !== 'fav')), []);
 
   useEffect(() => {
     const s = sb();
@@ -189,6 +192,20 @@ export default function HomePage() {
             </span>
             <ChevronLeft className="w-5 h-5 text-accent ltr:rotate-180" />
           </Link>
+          {myPlaces.length > 0 && (
+            <div className="flex gap-2 mt-2">
+              {(['home', 'work'] as const).map((k) => {
+                const p = myPlaces.find((x) => x.kind === k);
+                if (!p) return null;
+                return (
+                  <Link key={k} href={`/map?go=${k}`} className="flex-1 min-w-0 h-12 rounded-2xl bg-surface flex items-center gap-2 px-3 font-extrabold text-sm">
+                    <span aria-hidden className="text-xl leading-none">{k === 'home' ? '🏠' : '💼'}</span>
+                    <span className="truncate">{t(k === 'home' ? 'home.go_home' : 'home.go_work')}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* active jobs */}
@@ -215,14 +232,15 @@ export default function HomePage() {
 
         {/* captain promo */}
         <section className="px-4 mt-4">
-          <Link href="/driver" className="relative block rounded-3xl bg-ink text-white p-5 overflow-hidden kap-slash thin">
+          <Link href="/driver" data-tour="drive" className="relative block rounded-3xl bg-ink text-white p-5 overflow-hidden kap-slash thin">
             <div className="relative z-10 max-w-[70%]">
               <p className="text-sm text-neutralGray font-bold">{t('home.drive_title')}</p>
               <p className="text-2xl font-black leading-tight mt-1">{t('home.drive_big')}</p>
               <span className="inline-flex mt-3 h-9 px-4 rounded-xl bg-accent text-ink text-sm font-black items-center">{t('home.drive_cta')}</span>
             </div>
-            <span aria-hidden className="absolute z-10 bottom-3 end-5 text-6xl">
-              🚘
+            <span aria-hidden className="absolute z-10 bottom-3 end-4 text-4xl flex flex-col items-center leading-tight">
+              <span>🚘</span>
+              <span>🛵🚲</span>
             </span>
           </Link>
         </section>

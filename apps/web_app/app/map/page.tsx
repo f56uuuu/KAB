@@ -1,13 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Briefcase, CloudDownload, Crosshair, Home as HomeIcon, Navigation, Plus, Route as RouteIcon, Star, Trash2, WifiOff, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Briefcase, CloudDownload, Crosshair, Home as HomeIcon, Loader2, MapPin, Navigation, Plus, Route as RouteIcon, Search, Star, Trash2, WifiOff, X } from 'lucide-react';
 import { KapMap, type MapMarker } from '@/components/KapMap';
+import { NavMode } from '@/components/NavMode';
+import { ReportButton, ReportSheet } from '@/components/ReportSheet';
+import { REPORT_EMOJI, reportsNear, type ReportKind, type RoadReport } from '@/lib/reports';
 import { BackButton, useToast, btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
-import { getCurrentPosition, mapProvider, type LatLng } from '@/lib/maps';
+import { getCurrentPosition, mapProvider, type LatLng, type Place } from '@/lib/maps';
 import { downloadArea, places as placeStore, storageEstimate, trips as tripStore, type SavedPlace, type SavedTrip } from '@/lib/offline';
 
 const TXT = {
@@ -17,6 +20,7 @@ const TXT = {
     name: 'اسم المكان', save: 'حفظ', asHome: 'بيت', asWork: 'عمل', asFav: 'مفضل', route: 'المسار', go: 'ابدأ',
     download: 'حفظ المنطقة للاستخدام بدون إنترنت', downloading: 'جارٍ الحفظ…', downloaded: 'تم حفظ المنطقة', needOnline: 'تحتاج إنترنت لحفظ المنطقة أول مرة',
     noTrips: 'المسارات التي تفتحها تُحفظ هنا تلقائيًا', used: 'المساحة المستخدمة', km: 'كم', min: 'د', waze: 'Waze', google: 'Google Maps', ride: 'اطلب سيارة',
+    start: 'ابدأ القيادة', search: 'إلى أين؟', noResults: 'لا توجد نتائج', also: 'أو افتح في',
   },
   en: {
     title: 'My map', offline: 'You’re offline — your map and saved places still work', places: 'My places', trips: 'Recent routes',
@@ -24,6 +28,7 @@ const TXT = {
     name: 'Place name', save: 'Save', asHome: 'Home', asWork: 'Work', asFav: 'Favourite', route: 'Route', go: 'Go',
     download: 'Save this area for offline use', downloading: 'Saving…', downloaded: 'Area saved', needOnline: 'You need internet to save an area the first time',
     noTrips: 'Routes you open are kept here automatically', used: 'Storage used', km: 'km', min: 'min', waze: 'Waze', google: 'Google Maps', ride: 'Get a ride',
+    start: 'Start driving', search: 'Where to?', noResults: 'No results', also: 'Or open in',
   },
   ku: {
     title: 'نەخشەکەم', offline: 'ئۆفلاینیت — نەخشە و شوێنە پاشەکەوتکراوەکان کار دەکەن', places: 'شوێنەکانم', trips: 'دوایین ڕێگاکان',
@@ -31,6 +36,7 @@ const TXT = {
     name: 'ناوی شوێن', save: 'پاشەکەوت', asHome: 'ماڵ', asWork: 'کار', asFav: 'دڵخواز', route: 'ڕێگا', go: 'دەستپێبکە',
     download: 'ئەم ناوچەیە بۆ بەکارهێنانی بێ ئینتەرنێت پاشەکەوت بکە', downloading: 'پاشەکەوت دەکرێت…', downloaded: 'ناوچەکە پاشەکەوت کرا', needOnline: 'بۆ یەکەم جار ئینتەرنێتت پێویستە',
     noTrips: 'ئەو ڕێگایانەی دەیکەیتەوە لێرە پاشەکەوت دەبن', used: 'شوێنی بەکارهاتوو', km: 'کم', min: 'خ', waze: 'Waze', google: 'Google Maps', ride: 'ئۆتۆمبێل داوابکە',
+    start: 'دەست بە لێخوڕین بکە', search: 'بۆ کوێ؟', noResults: 'هیچ ئەنجامێک نییە', also: 'یان بیکەرەوە لە',
   },
   tr: {
     title: 'Haritam', offline: 'Çevrimdışısın — haritan ve kayıtlı yerlerin çalışıyor', places: 'Yerlerim', trips: 'Son rotalar',
@@ -38,6 +44,7 @@ const TXT = {
     name: 'Yer adı', save: 'Kaydet', asHome: 'Ev', asWork: 'İş', asFav: 'Favori', route: 'Rota', go: 'Git',
     download: 'Bu bölgeyi çevrimdışı kullanım için kaydet', downloading: 'Kaydediliyor…', downloaded: 'Bölge kaydedildi', needOnline: 'İlk kayıt için internet gerekir',
     noTrips: 'Açtığın rotalar burada otomatik saklanır', used: 'Kullanılan alan', km: 'km', min: 'dk', waze: 'Waze', google: 'Google Maps', ride: 'Araç çağır',
+    start: 'Sürüşe başla', search: 'Nereye?', noResults: 'Sonuç yok', also: 'Ya da şurada aç',
   },
 };
 
@@ -56,6 +63,13 @@ export default function MyMapPage() {
   const [fitKey, setFitKey] = useState(0);
   const [dl, setDl] = useState<{ done: number; total: number } | null>(null);
   const [used, setUsed] = useState<number | null>(null);
+  const [navigating, setNavigating] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reports, setReports] = useState<RoadReport[]>([]);
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState<Place[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [routing, setRouting] = useState(false);
   const { toast, toastNode } = useToast();
 
   const refresh = useCallback(() => {
@@ -96,11 +110,12 @@ export default function MyMapPage() {
   }, [refresh]);
 
   const markers = useMemo<MapMarker[]>(() => {
-    const m: MapMarker[] = saved.map((p) => ({ id: p.id, kind: p.kind === 'fav' ? 'job' : 'dropoff', lat: p.lat, lng: p.lng, emoji: p.kind === 'fav' ? '⭐' : undefined, label: p.name }));
+    const m: MapMarker[] = reports.map((r) => ({ id: `r${r.id}`, kind: 'report', lat: r.lat, lng: r.lng, emoji: REPORT_EMOJI[r.kind as ReportKind] }));
+    saved.forEach((p) => m.push({ id: p.id, kind: 'job', lat: p.lat, lng: p.lng, emoji: p.kind === 'home' ? '🏠' : p.kind === 'work' ? '💼' : '⭐', label: p.name }));
     if (me) m.push({ id: 'me', kind: 'me', ...me });
     if (draft) m.push({ id: 'draft', kind: 'pickup', ...draft.point });
     return m;
-  }, [saved, me, draft]);
+  }, [saved, me, draft, reports]);
 
   async function routeTo(p: { lat: number; lng: number; name: string }) {
     const from = me ?? (await getCurrentPosition()).point;
@@ -113,9 +128,10 @@ export default function MyMapPage() {
       return;
     }
     try {
+      setRouting(true);
       const r = await mapProvider.route(from, { lat: p.lat, lng: p.lng });
       if (r?.path?.length) {
-        const t = tripStore.save({ from, to: { lat: p.lat, lng: p.lng }, toName: p.name, path: r.path, km: r.distanceKm, min: r.durationMin });
+        const t = tripStore.save({ from, to: { lat: p.lat, lng: p.lng }, toName: p.name, path: r.path, km: r.distanceKm, min: r.durationMin, steps: r.steps });
         setActive(t);
         refresh();
         setFitKey((k) => k + 1);
@@ -123,7 +139,43 @@ export default function MyMapPage() {
     } catch {
       if (cached) setActive(cached);
     }
+    setRouting(false);
   }
+
+  // search any place ("Where to?")
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) return setResults(null);
+    const tm = setTimeout(async () => {
+      setSearching(true);
+      try {
+        setResults(await mapProvider.search(term, me ?? undefined));
+      } catch {
+        setResults([]);
+      }
+      setSearching(false);
+    }, 350);
+    return () => clearTimeout(tm);
+  }, [q, me]);
+
+  // live road reports around me
+  useEffect(() => {
+    if (!me) return;
+    reportsNear(me, 25).then(setReports);
+  }, [me]);
+
+  // /map?go=home|work opens the route straight away
+  const autoGo = useRef(false);
+  useEffect(() => {
+    if (autoGo.current || !me) return;
+    const go = new URLSearchParams(window.location.search).get('go');
+    const p = go && saved.find((x) => x.kind === go);
+    if (p) {
+      autoGo.current = true;
+      routeTo(p);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me, saved]);
 
   async function saveArea() {
     if (!navigator.onLine) return toast(tx.needOnline);
@@ -174,7 +226,11 @@ export default function MyMapPage() {
         )}
       </div>
 
-      <section className="absolute bottom-0 inset-x-0 z-[600] max-h-[58vh] overflow-y-auto bg-background rounded-t-sheet shadow-sheet">
+      <div className="absolute bottom-0 inset-x-0 z-[600] flex flex-col pointer-events-none">
+      <div dir="ltr" className="max-w-md w-full mx-auto px-4 pb-3 flex justify-end">
+        <ReportButton onClick={() => setReportOpen(true)} className="pointer-events-auto" />
+      </div>
+      <section className="max-h-[58vh] overflow-y-auto bg-background rounded-t-sheet shadow-sheet pointer-events-auto">
         <div className="max-w-md mx-auto px-5 pt-4 safe-bottom flex flex-col gap-4">
           {draft ? (
             <div className="flex flex-col gap-3">
@@ -217,21 +273,61 @@ export default function MyMapPage() {
                   <X className="w-4 h-4" />
                 </button>
               </div>
+              <button onClick={() => setNavigating(true)} className={btn({ size: 'lg', full: true })}>
+                <Navigation className="w-5 h-5" />
+                {tx.start}
+              </button>
+              <p className="text-xs text-muted font-bold -mb-1">{tx.also}</p>
               <div className="grid grid-cols-3 gap-2">
-                <a href={`https://waze.com/ul?ll=${active.to.lat},${active.to.lng}&navigate=yes`} target="_blank" rel="noreferrer" className={`${btn({ size: 'md' })} !bg-[#33CCFF] !shadow-none !px-2`}>
-                  <Navigation className="w-4 h-4" />
+                <a href={`https://waze.com/ul?ll=${active.to.lat},${active.to.lng}&navigate=yes`} target="_blank" rel="noreferrer" className={`${btn({ variant: 'soft', size: 'md' })} !px-2`}>
                   {tx.waze}
                 </a>
                 <a href={`https://www.google.com/maps/dir/?api=1&destination=${active.to.lat},${active.to.lng}&travelmode=driving`} target="_blank" rel="noreferrer" className={`${btn({ variant: 'soft', size: 'md' })} !px-2`}>
                   {tx.google}
                 </a>
-                <Link href={`/ride/new?to=${active.to.lat},${active.to.lng}&label=${encodeURIComponent(active.toName)}`} className={`${btn({ size: 'md' })} !px-2`}>
+                <Link href={`/ride/new?to=${active.to.lat},${active.to.lng}&label=${encodeURIComponent(active.toName)}`} className={`${btn({ variant: 'soft', size: 'md' })} !px-2`}>
                   {tx.ride}
                 </Link>
               </div>
             </div>
           ) : (
             <>
+              <div className="relative">
+                <Search className="w-5 h-5 text-muted absolute top-1/2 -translate-y-1/2 start-4 pointer-events-none" />
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder={tx.search}
+                  enterKeyHint="search"
+                  className="w-full h-14 rounded-2xl bg-surface ps-12 pe-11 text-base font-bold outline-none focus:ring-2 focus:ring-fg"
+                />
+                {(searching || routing) && <Loader2 className="w-5 h-5 animate-spin text-muted absolute top-1/2 -translate-y-1/2 end-4" />}
+                {!searching && !routing && q && (
+                  <button onClick={() => setQ('')} aria-label="x" className="absolute top-1/2 -translate-y-1/2 end-3 w-8 h-8 rounded-full flex items-center justify-center text-muted">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              {results && (
+                <ul className="-mt-2 divide-y divide-border">
+                  {results.length === 0 && !searching && <li className="py-3 text-sm text-muted">{tx.noResults}</li>}
+                  {results.map((r, i) => (
+                    <li key={i}>
+                      <button
+                        onClick={() => {
+                          setQ('');
+                          setResults(null);
+                          routeTo({ ...r.point, name: r.label });
+                        }}
+                        className="w-full flex items-center gap-3 py-3 text-start"
+                      >
+                        <MapPin className="w-5 h-5 text-muted shrink-0" />
+                        <span className="font-bold truncate">{r.label}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div>
                 <h2 className="font-extrabold mb-2">{tx.places}</h2>
                 <div className="grid grid-cols-2 gap-2">
@@ -315,6 +411,30 @@ export default function MyMapPage() {
           )}
         </div>
       </section>
+      </div>
+      <ReportSheet
+        open={reportOpen}
+        at={me}
+        onClose={() => setReportOpen(false)}
+        onDone={(msg, kind) => {
+          setReportOpen(false);
+          toast(msg);
+          if (kind && me) setReports((r) => [{ id: `local-${Date.now()}`, kind, lat: me.lat, lng: me.lng }, ...r]);
+        }}
+      />
+      {navigating && active && (
+        <NavMode
+          target={{ lat: active.to.lat, lng: active.to.lng, name: active.toName }}
+          route={{ path: active.path, steps: active.steps, km: active.km, min: active.min }}
+          onRoute={(r) => {
+            const t = tripStore.save({ from: me ?? active.from, to: active.to, toName: active.toName, path: r.path, km: r.km, min: r.min, steps: r.steps });
+            setActive(t);
+            refresh();
+          }}
+          onExit={() => setNavigating(false)}
+          toast={toast}
+        />
+      )}
       {toastNode}
     </main>
   );

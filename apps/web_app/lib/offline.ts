@@ -1,10 +1,10 @@
 'use client';
 
 // On-device storage for the personal map: saved places and recent routes stay usable without internet.
-import type { LatLng } from './maps';
+import type { LatLng, RouteStep } from './maps';
 
 export type SavedPlace = { id: string; kind: 'home' | 'work' | 'fav'; name: string; lat: number; lng: number; at: number };
-export type SavedTrip = { id: string; from: LatLng; to: LatLng; toName: string; path: [number, number][]; km: number; min: number; at: number };
+export type SavedTrip = { id: string; from: LatLng; to: LatLng; toName: string; path: [number, number][]; km: number; min: number; at: number; steps?: RouteStep[] };
 
 const PLACES = 'kap_places_v1';
 const TRIPS = 'kap_trips_v1';

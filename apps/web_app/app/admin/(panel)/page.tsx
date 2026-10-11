@@ -39,7 +39,8 @@ export default function Overview() {
     () => [
       ...(live.drivers ?? []).map((d: any) => ({
         id: `d${d.id}`,
-        kind: d.type === 'BIKE' ? 'bike' : 'car',
+        kind: d.type === 'BIKE' || d.type === 'BICYCLE' ? 'bike' : 'car',
+        emoji: d.type === 'BICYCLE' ? '🚲' : undefined,
         lat: +d.lat,
         lng: +d.lng,
         dim: !d.online,
