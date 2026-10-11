@@ -32,12 +32,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang={lang} dir={langInfo(lang).dir} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        <link rel="preload" as="image" href="/brand/kap-icon-512.webp" type="image/webp" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-tajawal min-h-screen">
+        {/* opening animation: plays once per app launch (skipped by the boot script on later page loads) */}
+        <div id="kap-splash" aria-hidden="true">
+          <div className="kap-splash-logo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/kap-icon-512.webp" alt="" width={124} height={124} fetchPriority="high" />
+            <span className="kap-splash-shine" />
+          </div>
+          <span className="kap-splash-bar" />
+        </div>
         <ThemeProvider initialPref={theme}>
           <I18nProvider initialLang={lang}>
             <ServiceWorkerRegistration />

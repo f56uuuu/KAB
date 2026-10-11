@@ -1,9 +1,9 @@
 // KAP service worker: instant reopen, works on weak internet, and keeps maps usable offline.
-const SHELL = 'kap-shell-v3';
-const STATIC = 'kap-static-v3';
+const SHELL = 'kap-shell-v4';
+const STATIC = 'kap-static-v4';
 const MAP = 'kap-map-v1';
 const MAP_LIMIT = 6000; // tiles + fonts + sprites (~60–120 MB worst case)
-const SHELL_URLS = ['/', '/map', '/offline', '/manifest.webmanifest', '/icon-512.png'];
+const SHELL_URLS = ['/', '/map', '/offline', '/manifest.webmanifest', '/icon-512.png', '/brand/kap-icon-512.webp', '/brand/kap-icon-256.webp'];
 const MAP_HOSTS = ['tiles.openfreemap.org'];
 const PLUGIN_HOSTS = ['unpkg.com'];
 
