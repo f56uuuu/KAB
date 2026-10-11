@@ -139,8 +139,8 @@ export function DriverDocs({ me, onChange }: { me: any; onChange: (d: any) => vo
                 </p>
               )}
               {s !== 'approved' && s !== 'pending' && open !== type && (
-                <button onClick={() => setOpen(type)} className="mt-3 w-full h-11 rounded-xl bg-ink text-white font-bold text-sm flex items-center justify-center gap-2">
-                  {META[type]?.selfie ? <Camera className="w-4 h-4 text-accent" /> : <FileUp className="w-4 h-4 text-accent" />}
+                <button onClick={() => setOpen(type)} className="mt-3 w-full h-11 rounded-xl bg-accent text-ink font-black text-sm flex items-center justify-center gap-2 active:scale-[.99]">
+                  {META[type]?.selfie ? <Camera className="w-4 h-4" /> : <FileUp className="w-4 h-4" />}
                   {s === 'missing' ? (META[type]?.selfie ? tx.take : tx.upload) : tx.replace}
                 </button>
               )}
@@ -361,6 +361,67 @@ export function AdminDriverDocs({ driverId, onChanged }: { driverId: number; onC
       })}
       {err && <p className="text-sm text-danger font-bold">{err}</p>}
       <p className="text-[11px] text-muted">{a.logged}</p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ registration steps */
+const STEPS = {
+  ar: { s: ['معلوماتك', 'المستمسكات', 'المراجعة'], need: 'ستحتاج في الخطوة التالية:', next: 'التالي: رفع الصورة والمستمسكات', upTitle: 'ارفع صورتك ومستمسكاتك', upSub: 'خطوة أخيرة — بعدها نراجع طلبك ونفعّل حسابك.', phone: 'رقم هاتف فعّال باسمك' },
+  en: { s: ['Your details', 'Documents', 'Review'], need: 'In the next step you’ll need:', next: 'Next: upload photo & documents', upTitle: 'Upload your photo and documents', upSub: 'Last step — then we review and activate your account.', phone: 'An active phone number in your name' },
+};
+export function stepsTxt(lang: string) {
+  return lang === 'ar' || lang === 'ku' ? STEPS.ar : STEPS.en;
+}
+
+export function DriverSteps({ step, dark = false }: { step: 1 | 2 | 3; dark?: boolean }) {
+  const { lang } = useI18n();
+  const tx = stepsTxt(lang);
+  return (
+    <ol className="flex items-start gap-2 w-full">
+      {tx.s.map((label, i) => {
+        const n = i + 1;
+        const done = n < step;
+        const on = n === step;
+        return (
+          <li key={n} className="flex-1 min-w-0 flex flex-col gap-1.5">
+            <span className={`h-1.5 rounded-full ${done || on ? 'bg-accent' : dark ? 'bg-white/20' : 'bg-surface'}`} />
+            <span className={`text-[11px] font-bold truncate ${on ? (dark ? 'text-white' : 'text-fg') : dark ? 'text-white/55' : 'text-muted'}`}>
+              {done ? '✓ ' : `${n}. `}
+              {label}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+const REQ: Record<string, DocType[]> = {
+  BICYCLE: ['selfie', 'national_id_front', 'national_id_back', 'vehicle_photo'],
+  BIKE: ['selfie', 'national_id_front', 'national_id_back', 'driving_license', 'vehicle_registration', 'vehicle_photo'],
+};
+/** What the captain will be asked for, shown before they start. */
+export function RequiredDocsPreview({ vehicle }: { vehicle: string }) {
+  const { lang } = useI18n();
+  const tx = docTxt(lang);
+  const st = stepsTxt(lang);
+  const list = REQ[vehicle] ?? ['selfie', 'national_id_front', 'national_id_back', 'driving_license', 'vehicle_registration', 'insurance', 'vehicle_photo'];
+  return (
+    <div className="rounded-2xl bg-surface p-4">
+      <p className="text-sm font-black mb-2">{st.need}</p>
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm">
+        <li className="flex items-center gap-2">📱 {st.phone}</li>
+        {list.map((d) => (
+          <li key={d} className="flex items-center gap-2">
+            {META[d].emoji} {tx.docs[d][0]}
+          </li>
+        ))}
+      </ul>
+      <p className="text-[11px] text-muted mt-3 flex items-center gap-1">
+        <Lock className="w-3 h-3" />
+        {tx.private}
+      </p>
     </div>
   );
 }

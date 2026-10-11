@@ -11,7 +11,7 @@ import { useI18n } from '@/lib/i18n';
 import { sb, useProfile } from '@/lib/hooks';
 import { mapProvider, type LatLng } from '@/lib/maps';
 import { errorCode, money } from '@/lib/format';
-import { DriverDocs } from '@/components/DriverDocs';
+import { DriverDocs, DriverSteps, RequiredDocsPreview, stepsTxt } from '@/components/DriverDocs';
 import { PhoneVerify, otpReady, sheetTxt } from '@/components/PhoneVerify';
 
 const VEHICLES = [
@@ -112,6 +112,9 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
         </div>
         <h1 className="relative z-10 text-3xl font-black mt-8 max-w-[16ch]">{t('driver.register_title')}</h1>
         <p className="relative z-10 text-neutralGray mt-2 max-w-sm">{t('driver.register_sub')}</p>
+        <div className="relative z-10 mt-6 max-w-md">
+          <DriverSteps step={1} dark />
+        </div>
       </section>
       <form onSubmit={submit} className="max-w-md mx-auto -mt-5 relative bg-background rounded-t-sheet px-5 pt-6 flex flex-col gap-4">
         <Field label={t('driver.full_name')}>
@@ -188,8 +191,9 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
             {error}
           </p>
         )}
+        <RequiredDocsPreview vehicle={f.type} />
         <Button type="submit" full loading={busy}>
-          {busy ? t('driver.submitting') : t('driver.submit')}
+          {busy ? t('driver.submitting') : existing ? t('driver.submit') : stepsTxt(lang).next}
         </Button>
       </form>
     </main>
@@ -198,9 +202,13 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
 
 /* ------------------------------------------------------------------ pending / rejected / suspended */
 function Status({ me, onEdit, setMe }: { me: any; onEdit: () => void; setMe: (d: any) => void }) {
-  const { t } = useI18n();
-  const title =
-    me.status === 'PENDING'
+  const { t, lang } = useI18n();
+  const req: string[] = me.required_docs ?? [];
+  const sentTypes = new Set((me.docs ?? []).filter((d: any) => !['rejected', 're_upload_required', 'expired'].includes(d.status)).map((d: any) => d.type));
+  const needDocs = req.length > 0 && req.some((r) => !sentTypes.has(r)) && me.status !== 'BLOCKED';
+  const title = needDocs
+    ? stepsTxt(lang).upTitle
+    : me.status === 'PENDING'
       ? t('driver.pending_title')
       : me.status === 'REJECTED'
         ? t('driver.rejected_title')
@@ -212,12 +220,18 @@ function Status({ me, onEdit, setMe }: { me: any; onEdit: () => void; setMe: (d:
       <div className="safe-top px-4 pt-2">
         <BackButton href="/account" />
       </div>
-      <div className="flex-1 max-w-md mx-auto w-full px-6 pb-10 flex flex-col items-center justify-center text-center gap-4">
-        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center ${me.status === 'PENDING' ? 'bg-accent' : 'bg-danger/15'}`}>
+      <div className="flex-1 max-w-md mx-auto w-full px-6 pb-10 pt-2 flex flex-col items-center justify-center text-center gap-4">
+        <div className={`w-20 h-20 rounded-3xl items-center justify-center ${needDocs ? 'hidden' : 'flex'} ${me.status === 'PENDING' ? 'bg-accent' : 'bg-danger/15'}`}>
           {me.status === 'PENDING' ? <Clock className="w-10 h-10 text-ink" /> : <ShieldAlert className="w-10 h-10 text-danger" />}
         </div>
+        <DriverSteps step={needDocs ? 2 : 3} />
         <h1 className="text-2xl font-black">{title}</h1>
-        {me.status === 'PENDING' && <p className="text-muted">{t('driver.pending_sub')}</p>}
+        {needDocs ? <p className="text-muted">{stepsTxt(lang).upSub}</p> : me.status === 'PENDING' && <p className="text-muted">{t('driver.pending_sub')}</p>}
+        {needDocs && (
+          <div className="w-full text-start">
+            <DriverDocs me={me} onChange={setMe} />
+          </div>
+        )}
         {me.admin_notes && me.status !== 'PENDING' && (
           <p className="rounded-2xl bg-surface p-4 text-sm">{t('driver.note', { note: me.admin_notes })}</p>
         )}
@@ -230,7 +244,7 @@ function Status({ me, onEdit, setMe }: { me: any; onEdit: () => void; setMe: (d:
             {me.plate_number}
           </p>
         </div>
-        {(me.status === 'PENDING' || me.status === 'REJECTED' || me.status === 'SUSPENDED') && (me.required_docs?.length ?? 0) > 0 && (
+        {!needDocs && (me.status === 'PENDING' || me.status === 'REJECTED' || me.status === 'SUSPENDED') && (me.required_docs?.length ?? 0) > 0 && (
           <div className="w-full text-start mt-2">
             <DriverDocs me={me} onChange={setMe} />
           </div>
