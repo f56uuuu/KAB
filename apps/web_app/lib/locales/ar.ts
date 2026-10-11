@@ -46,6 +46,9 @@ export const ar: Partial<Record<Key, string>> = {
   'error.not_authenticated': 'سجّل الدخول مرة أخرى.',
   'error.missing_fields': 'املأ جميع الحقول المطلوبة.',
   'error.bad_vehicle': 'اختر نوع المركبة.',
+  'error.phone_not_verified': 'أكّد رقم هاتفك أولًا برمز الرسالة.',
+  'error.documents_incomplete': 'لا يمكن القبول قبل الموافقة على كل المستمسكات المطلوبة.',
+  'error.documents_expired': 'أحد مستمسكاتك منتهي الصلاحية — جدّده لتستقبل الطلبات.',
 
   'welcome.choose': 'اختر لغتك',
   'welcome.detected': 'مطابقة للغة هاتفك',

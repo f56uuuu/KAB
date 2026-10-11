@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Bell, Briefcase, Car, ChevronLeft, FileText, Headphones, Home as HomeIcon, LogOut, Map as MapIcon, Sparkles, Moon, Phone, Shield, Sun, SunMoon } from 'lucide-react';
+import { BadgeCheck, Bell, Briefcase, Car, ChevronLeft, FileText, Headphones, Home as HomeIcon, LogOut, Map as MapIcon, Sparkles, Moon, Phone, Shield, Sun, SunMoon } from 'lucide-react';
+import { PhoneVerifySheet, otpReady, sheetTxt } from '@/components/PhoneVerify';
 import { DeleteAccountBox } from '@/components/DeleteAccountBox';
 import { BottomNav } from '@/components/BottomNav';
 import { Button, TopBar, inputCls, useToast, btn } from '@/components/ui';
@@ -17,6 +18,11 @@ export default function AccountPage() {
   const { pref, setPref } = useTheme();
   const profile = useProfile();
   const [name, setName] = useState('');
+  const [smsOn, setSmsOn] = useState(false);
+  const [verifyOpen, setVerifyOpen] = useState(false);
+  useEffect(() => {
+    otpReady().then(setSmsOn);
+  }, []);
   const [places, setPlaces] = useStickyState<any[]>('account.places', []);
   const [support, setSupport] = useStickyState<string | null>('account.support', null);
   const [confirmOut, setConfirmOut] = useState(false);
@@ -87,10 +93,22 @@ export default function AccountPage() {
               aria-label={t('account.name')}
               className="w-full bg-transparent text-xl font-extrabold outline-none placeholder:text-muted"
             />
-            <p className="text-sm text-muted flex items-center gap-1.5" dir="ltr">
-              <Phone className="w-3.5 h-3.5" />
-              {profile?.phone_number ?? '—'}
-            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm text-muted flex items-center gap-1.5" dir="ltr">
+                <Phone className="w-3.5 h-3.5" />
+                {profile?.phone_number ?? '—'}
+              </p>
+              {profile?.phone_verified_at ? (
+                <span className="text-[11px] font-bold text-success flex items-center gap-1">
+                  <BadgeCheck className="w-3.5 h-3.5" />
+                  {sheetTxt(lang).verified}
+                </span>
+              ) : smsOn ? (
+                <button onClick={() => setVerifyOpen(true)} className="text-[11px] font-black h-7 px-2.5 rounded-full bg-accent text-ink">
+                  {sheetTxt(lang).verify}
+                </button>
+              ) : null}
+            </div>
           </div>
         </section>
 
@@ -213,6 +231,12 @@ export default function AccountPage() {
       </div>
       {toastNode}
       <BottomNav />
+      <PhoneVerifySheet
+        open={verifyOpen}
+        initialPhone={profile?.phone_number ?? undefined}
+        onClose={() => setVerifyOpen(false)}
+        onDone={() => window.location.reload()}
+      />
     </main>
   );
 }

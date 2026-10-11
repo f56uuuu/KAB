@@ -5,8 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Briefcase, CloudDownload, Crosshair, Home as HomeIcon, Loader2, MapPin, Navigation, Plus, Route as RouteIcon, Search, Star, Trash2, WifiOff, X } from 'lucide-react';
 import { KapMap, type MapMarker } from '@/components/KapMap';
 import { NavMode } from '@/components/NavMode';
+import { VoiceButton } from '@/components/VoiceButton';
+import { parseCommand } from '@/lib/voice';
 import { ReportButton, ReportSheet } from '@/components/ReportSheet';
-import { REPORT_EMOJI, reportsNear, type ReportKind, type RoadReport } from '@/lib/reports';
+import { REPORT_EMOJI, reportTxt, reportsNear, submitReport, type ReportKind, type RoadReport } from '@/lib/reports';
 import { BackButton, useToast, btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { currentUser, sb } from '@/lib/hooks';
@@ -156,6 +158,25 @@ export default function MyMapPage() {
     return () => clearTimeout(tm);
   }, [q, me]);
 
+  async function onVoice(text: string) {
+    const c = parseCommand(text);
+    if (!c) return;
+    if (c.type === 'go') {
+      const p = saved.find((x) => x.kind === c.place);
+      if (p) return routeTo(p);
+      return toast(c.place === 'home' ? tx.setHome : tx.setWork);
+    }
+    if (c.type === 'report') {
+      const at = me ?? (await getCurrentPosition()).point;
+      const r = await submitReport(c.kind, at);
+      const rt = reportTxt(lang);
+      toast(r === 'sent' ? `${REPORT_EMOJI[c.kind]} ${rt.thanks}` : r === 'queued' ? rt.queued : r === 'login' ? rt.login : rt.failed);
+      if (r === 'sent' || r === 'queued') setReports((rs) => [{ id: `local-${Date.now()}`, kind: c.kind, lat: at.lat, lng: at.lng }, ...rs]);
+      return;
+    }
+    if (c.type === 'search') setQ(c.query);
+  }
+
   // live road reports around me
   useEffect(() => {
     if (!me) return;
@@ -300,6 +321,7 @@ export default function MyMapPage() {
                   className="w-full h-14 rounded-2xl bg-surface ps-12 pe-11 text-base font-bold outline-none focus:ring-2 focus:ring-fg"
                 />
                 {(searching || routing) && <Loader2 className="w-5 h-5 animate-spin text-muted absolute top-1/2 -translate-y-1/2 end-4" />}
+                {!searching && !routing && !q && <VoiceButton onText={onVoice} className="absolute top-1/2 -translate-y-1/2 end-2 w-10 h-10 rounded-full" />}
                 {!searching && !routing && q && (
                   <button onClick={() => setQ('')} aria-label="x" className="absolute top-1/2 -translate-y-1/2 end-3 w-8 h-8 rounded-full flex items-center justify-center text-muted">
                     <X className="w-4 h-4" />

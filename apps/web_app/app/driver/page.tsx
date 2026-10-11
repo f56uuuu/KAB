@@ -11,6 +11,8 @@ import { useI18n } from '@/lib/i18n';
 import { sb, useProfile } from '@/lib/hooks';
 import { mapProvider, type LatLng } from '@/lib/maps';
 import { errorCode, money } from '@/lib/format';
+import { DriverDocs } from '@/components/DriverDocs';
+import { PhoneVerify, otpReady, sheetTxt } from '@/components/PhoneVerify';
 
 const VEHICLES = [
   { v: 'ECONOMY', emoji: '🚗' },
@@ -45,12 +47,12 @@ export default function DriverPage() {
   if (me === undefined) return <main className="min-h-screen flex items-center justify-center text-muted">{t('common.loading')}</main>;
   if (me === null || editing) return <Register existing={me} onDone={(d) => (setMe(d), setEditing(false))} />;
   if (me.status === 'APPROVED') return <Dashboard me={me} setMe={setMe} />;
-  return <Status me={me} onEdit={() => setEditing(true)} />;
+  return <Status me={me} setMe={setMe} onEdit={() => setEditing(true)} />;
 }
 
 /* ------------------------------------------------------------------ registration */
 function Register({ existing, onDone }: { existing: any; onDone: (d: any) => void }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const profile = useProfile();
   const [f, setF] = useState({
     name: existing?.display_name ?? '',
@@ -64,6 +66,15 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sms, setSms] = useState(false);
+  const [verified, setVerified] = useState<string | null>(null);
+  useEffect(() => {
+    otpReady().then(setSms);
+  }, []);
+  useEffect(() => {
+    if (profile?.phone_verified_at) setVerified(profile.phone_number);
+  }, [profile]);
+  const needPhone = sms && !verified;
 
   useEffect(() => {
     if (profile && !f.phone) setF((x) => ({ ...x, phone: profile.phone_number ?? '', name: x.name || profile.first_name || '' }));
@@ -73,6 +84,7 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (needPhone) return setError(t('error.phone_not_verified'));
     if (!f.name.trim() || (!f.plate.trim() && f.type !== 'BICYCLE') || !f.city) return setError(t('error.missing_fields'));
     setBusy(true);
     setError(null);
@@ -105,9 +117,33 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
         <Field label={t('driver.full_name')}>
           <input value={f.name} onChange={set('name')} className={inputCls} autoComplete="name" required />
         </Field>
-        <Field label={t('driver.phone')}>
-          <input value={f.phone} onChange={set('phone')} className={inputCls} type="tel" dir="ltr" />
-        </Field>
+        {sms ? (
+          <div className="rounded-2xl border border-border p-4">
+            <p className="text-sm font-bold mb-1">{t('driver.phone')}</p>
+            {verified ? (
+              <p className="font-bold flex items-center gap-2" dir="ltr">
+                {verified}
+                <span className="text-xs text-success">✓ {sheetTxt(lang).verified}</span>
+              </p>
+            ) : (
+              <>
+                <p className="text-xs text-muted mb-3">{sheetTxt(lang).sub}</p>
+                <PhoneVerify
+                  mode="link"
+                  initialPhone={profile?.phone_number ?? undefined}
+                  onDone={async () => {
+                    const { data } = await sb().auth.getUser();
+                    setVerified(data.user?.phone ? '+' + data.user.phone.replace(/^\+/, '') : f.phone);
+                  }}
+                />
+              </>
+            )}
+          </div>
+        ) : (
+          <Field label={t('driver.phone')}>
+            <input value={f.phone} onChange={set('phone')} className={inputCls} type="tel" dir="ltr" />
+          </Field>
+        )}
         <Field label={t('driver.city')}>
           <CityPicker variant="field" value={f.city ? Number(f.city) : null} onChange={(id) => setF((x) => ({ ...x, city: String(id) }))} />
         </Field>
@@ -161,7 +197,7 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
 }
 
 /* ------------------------------------------------------------------ pending / rejected / suspended */
-function Status({ me, onEdit }: { me: any; onEdit: () => void }) {
+function Status({ me, onEdit, setMe }: { me: any; onEdit: () => void; setMe: (d: any) => void }) {
   const { t } = useI18n();
   const title =
     me.status === 'PENDING'
@@ -176,7 +212,7 @@ function Status({ me, onEdit }: { me: any; onEdit: () => void }) {
       <div className="safe-top px-4 pt-2">
         <BackButton href="/account" />
       </div>
-      <div className="flex-1 max-w-md mx-auto w-full px-6 flex flex-col items-center justify-center text-center gap-4">
+      <div className="flex-1 max-w-md mx-auto w-full px-6 pb-10 flex flex-col items-center justify-center text-center gap-4">
         <div className={`w-20 h-20 rounded-3xl flex items-center justify-center ${me.status === 'PENDING' ? 'bg-accent' : 'bg-danger/15'}`}>
           {me.status === 'PENDING' ? <Clock className="w-10 h-10 text-ink" /> : <ShieldAlert className="w-10 h-10 text-danger" />}
         </div>
@@ -194,6 +230,11 @@ function Status({ me, onEdit }: { me: any; onEdit: () => void }) {
             {me.plate_number}
           </p>
         </div>
+        {(me.status === 'PENDING' || me.status === 'REJECTED' || me.status === 'SUSPENDED') && (me.required_docs?.length ?? 0) > 0 && (
+          <div className="w-full text-start mt-2">
+            <DriverDocs me={me} onChange={setMe} />
+          </div>
+        )}
         {(me.status === 'PENDING' || me.status === 'REJECTED') && (
           <Button variant="soft" size="md" onClick={onEdit}>
             {t('driver.edit')}
@@ -297,7 +338,10 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
     setBusy('online');
     const { data } = await sb().rpc('driver_set_online', { p_online: !online, p_lat: pos?.lat ?? null, p_lng: pos?.lng ?? null });
     setBusy(null);
-    if (data) setMe(data);
+    if (data) {
+      setMe(data);
+      if ((data as any).blocked) toast(t('error.documents_expired'));
+    }
   }
 
   async function accept(j: any) {
@@ -339,6 +383,18 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
   }, [pos, job, jobs, me.vehicle_type]);
 
   const cur = earn?.currency ?? job?.currency ?? 'IQD';
+
+  const expiredDocs = (me.docs ?? []).some((d: any) => d.status === 'expired' || d.status === 're_upload_required');
+  if (expiredDocs)
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="max-w-md mx-auto px-5 safe-top pt-3 pb-10 flex flex-col gap-4">
+          <BackButton href="/account" />
+          <p className="rounded-2xl bg-danger/10 text-danger p-4 text-sm font-bold">{t('error.documents_expired')}</p>
+          <DriverDocs me={me} onChange={setMe} />
+        </div>
+      </main>
+    );
 
   return (
     <main className="fixed inset-0 bg-background">

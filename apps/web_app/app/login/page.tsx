@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Globe } from 'lucide-react';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { KMark } from '@/components/Logo';
 import { Button } from '@/components/ui';
 import { langInfo, useI18n } from '@/lib/i18n';
+import { PhoneVerify, otpReady } from '@/components/PhoneVerify';
 
 const COUNTRIES = [
   { code: '+964', flag: '🇮🇶' },
@@ -14,15 +15,23 @@ const COUNTRIES = [
   { code: '+963', flag: '🇸🇾' },
 ];
 
-// Testing phase: a real Supabase session is created without SMS (anonymous sign-in) and the phone
-// number is stored on the profile. Switch to phone OTP once an SMS provider is connected — every
-// other screen already works from the real session.
+// When the admin has connected an SMS gateway, sign-in is by a 6-digit code sent to the phone.
+// Until then a real session is created without SMS (anonymous sign-in) and the number is kept on the profile.
+function goNext() {
+  const next = new URLSearchParams(window.location.search).get('next');
+  window.location.assign(next && next.startsWith('/') && !next.startsWith('//') ? next : '/home');
+}
+
 export default function LoginPage() {
   const { t, dir, lang } = useI18n();
   const [country, setCountry] = useState('+964');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sms, setSms] = useState<boolean | null>(null);
+  useEffect(() => {
+    otpReady().then(setSms);
+  }, []);
   const digits = phone.replace(/\D/g, '').replace(/^0+/, '');
 
   async function submit(e: React.FormEvent) {
@@ -42,8 +51,7 @@ export default function LoginPage() {
       return;
     }
     await supabase.from('profiles').update({ phone_number: full }).eq('id', data.user.id);
-    const next = new URLSearchParams(window.location.search).get('next');
-    window.location.assign(next && next.startsWith('/') ? next : '/home');
+    goNext();
   }
 
   return (
@@ -64,6 +72,12 @@ export default function LoginPage() {
           <h1 className="text-2xl font-extrabold">{t('login.title')}</h1>
           <p className="text-muted mt-1">{t('login.subtitle')}</p>
         </div>
+        {sms ? (
+          <PhoneVerify mode="login" onDone={goNext} />
+        ) : sms === null ? (
+          <div className="h-36 rounded-2xl bg-surface animate-pulse" />
+        ) : (
+          <>
         <div className="flex gap-2" dir="ltr">
           <select
             aria-label={t('login.country')}
@@ -97,6 +111,8 @@ export default function LoginPage() {
         <Button type="submit" loading={loading} full>
           {loading ? t('login.signing_in') : t('login.continue')}
         </Button>
+          </>
+        )}
         <p className="text-xs text-muted text-center mt-auto pb-2 leading-6">
           {t('login.terms')}{' '}
           <Link href="/terms" className="underline font-bold">

@@ -6,7 +6,8 @@ import { Modal, PageHead, Panel, Pill, statusTone } from '@/components/admin';
 import { Button, Chip, inputCls, useToast } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
-import { dateTime } from '@/lib/format';
+import { dateTime, errorCode } from '@/lib/format';
+import { AdminDriverDocs } from '@/components/DriverDocs';
 
 const FILTERS = ['PENDING', 'APPROVED', 'SUSPENDED', 'REJECTED', 'BLOCKED', 'ALL'] as const;
 
@@ -47,7 +48,7 @@ export default function DriversAdmin() {
     setBusy(status);
     const { error } = await sb().rpc('admin_set_driver_status', { p_driver: open.id, p_status: status, p_note: note.trim() || null });
     setBusy(null);
-    if (error) return toast(t('admin.save_failed', { msg: error.message }));
+    if (error) return toast(errorCode(error) !== 'generic' ? t(`error.${errorCode(error)}` as any) : t('admin.save_failed', { msg: error.message }));
     toast(t('admin.saved'));
     setOpen(null);
     load();
@@ -135,6 +136,7 @@ export default function DriversAdmin() {
               <Info label={t('admin.applied')} value={dateTime(open.created_at, locale)} />
               <Info label={t('admin.status')} value={<Pill tone={statusTone(open.status)}>{t(`admin.driver_status.${open.status}` as any)}</Pill>} />
             </div>
+            <AdminDriverDocs driverId={open.id} />
             <label className="flex flex-col gap-1.5">
               <span className="text-sm font-bold">{t('admin.drivers.note_ph')}</span>
               <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={`${inputCls} h-auto py-3`} />

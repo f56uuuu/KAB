@@ -53,7 +53,7 @@ export function errorCode(err: unknown): string {
   const known = [
     'active_ride_exists', 'service_disabled', 'no_city', 'vehicle_unavailable', 'store_closed', 'store_not_found',
     'product_unavailable', 'below_minimum', 'empty_cart', 'driver_not_approved', 'already_on_a_job', 'forbidden',
-    'not_authenticated', 'missing_fields', 'bad_vehicle',
+    'not_authenticated', 'missing_fields', 'bad_vehicle', 'phone_not_verified', 'documents_incomplete', 'documents_expired',
   ];
   return known.find((k) => m.includes(k)) ?? 'generic';
 }

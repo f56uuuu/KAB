@@ -6,6 +6,7 @@ import { PageHead, Panel, cellInput } from '@/components/admin';
 import { Button, Switch, useToast } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
+import { SmsSettings } from '@/components/SmsSettings';
 
 const FIELDS = [
   ['app_name', 'admin.system.app_name'],
@@ -103,6 +104,7 @@ export default function SystemAdmin() {
           ))}
         </div>
       </Panel>
+      <SmsSettings />
       {toastNode}
     </>
   );

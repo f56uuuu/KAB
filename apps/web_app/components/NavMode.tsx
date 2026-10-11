@@ -8,7 +8,9 @@ import { btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { mapProvider, type LatLng, type RouteStep } from '@/lib/maps';
 import { bearing, distanceShort, instruction, makePlan, metres, progress, say, spoken, turnOf, type NavPlan, type Turn } from '@/lib/nav';
-import { flushReports, REPORT_EMOJI, reportsNear, reportTxt, type ReportKind, type RoadReport } from '@/lib/reports';
+import { flushReports, REPORT_EMOJI, reportsNear, reportTxt, submitReport, type ReportKind, type RoadReport } from '@/lib/reports';
+import { VoiceButton } from '@/components/VoiceButton';
+import { parseCommand } from '@/lib/voice';
 
 const TXT = {
   ar: { end: 'إنهاء', arrive: 'الوصول', min: 'د', km: 'كم', kmh: 'كم/س', arrived: 'وصلت! 🎉', arrivedSub: 'وصلت إلى', done: 'تم', rerouting: 'نعيد حساب الطريق…', follow: 'اتبع الخط الأصفر', toward: 'باتجاه', then: 'ثم', gps: 'نبحث عن إشارة GPS…', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', offline: 'بدون إنترنت — نكمل على المسار المحفوظ' },
@@ -227,6 +229,22 @@ export function NavMode({ target, route, onExit, onRoute, toast }: { target: Nav
   const ThenIcon = prog?.after && hasSteps ? TURN_ICON[turnOf(prog.after)] : null;
   const zoom = speed > 70 ? 15.5 : speed > 40 ? 16.3 : 17;
 
+  async function onVoice(text: string) {
+    const c = parseCommand(text);
+    if (!c) return;
+    if (c.type === 'end') return onExit();
+    if (c.type === 'mute' && !muted) return toggleMute();
+    if (c.type === 'unmute' && muted) return toggleMute();
+    if (c.type === 'report' && pos) {
+      const r = await submitReport(c.kind, pos);
+      const rt = reportTxt(lang);
+      const m = r === 'sent' ? rt.thanks : r === 'queued' ? rt.queued : r === 'login' ? rt.login : rt.failed;
+      toast(`${REPORT_EMOJI[c.kind]} ${m}`);
+      if (!mutedRef.current) say(m, lang);
+      if (r === 'sent' || r === 'queued') setReports((rs) => [{ id: `local-${Date.now()}`, kind: c.kind, lat: pos.lat, lng: pos.lng }, ...rs]);
+    }
+  }
+
   function toggleMute() {
     const v = !muted;
     setMuted(v);
@@ -301,13 +319,16 @@ export function NavMode({ target, route, onExit, onRoute, toast }: { target: Nav
               </span>
             </div>
           )}
+          <div className="ms-auto flex gap-2">
+          <VoiceButton onText={onVoice} className="w-12 h-12 rounded-full bg-background text-fg shadow-float pointer-events-auto" />
           <button
             onClick={toggleMute}
             aria-label={muted ? tx.unmute : tx.mute}
-            className="ms-auto w-12 h-12 rounded-full bg-background text-fg shadow-float flex items-center justify-center pointer-events-auto"
+            className="w-12 h-12 rounded-full bg-background text-fg shadow-float flex items-center justify-center pointer-events-auto"
           >
             {muted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
           </button>
+          </div>
         </div>
         {!online && <div className="self-center rounded-full bg-ink text-white text-xs font-bold px-3 py-1.5 pointer-events-auto">{tx.offline}</div>}
       </div>

@@ -47,6 +47,9 @@ export const en = {
   'error.not_authenticated': 'Please sign in again.',
   'error.missing_fields': 'Fill in all required fields.',
   'error.bad_vehicle': 'Choose a vehicle type.',
+  'error.phone_not_verified': 'Confirm your phone number with the SMS code first.',
+  'error.documents_incomplete': 'Approve every required document before approving the captain.',
+  'error.documents_expired': 'One of your documents has expired — renew it to receive jobs.',
 
   // welcome
   'welcome.choose': 'Choose your language',
