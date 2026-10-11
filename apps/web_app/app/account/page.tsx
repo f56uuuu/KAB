@@ -210,6 +210,7 @@ export default function AccountPage() {
           <KMark size={32} />
           <p className="text-xs font-bold">{t('common.tagline')}</p>
           <p className="text-[11px]">KAP 2.0</p>
+          <p className="text-[11px]" dir="ltr" lang="en">Developed by Ahmed Ihsan Hussein</p>
         </div>
       </div>
       {toastNode}

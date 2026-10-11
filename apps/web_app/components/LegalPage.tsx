@@ -54,7 +54,7 @@ export function LegalPage({ doc, children, title, hideBody }: { doc: keyof typeo
           <Link href="/support">{nav.support}</Link>
         </nav>
         <p className="mt-4 text-xs text-muted" dir="ltr">
-          © {new Date().getFullYear()} KAP. Map data © OpenStreetMap contributors.
+          © {new Date().getFullYear()} KAP. Developed by Ahmed Ihsan Hussein. Map data © OpenStreetMap contributors.
         </p>
       </article>
     </main>

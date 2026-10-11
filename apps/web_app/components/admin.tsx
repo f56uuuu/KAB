@@ -169,6 +169,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 {me.name}
               </p>
             )}
+            {!collapsed && (
+              <p className="px-3 text-[10px] text-white/35 truncate" dir="ltr" lang="en">
+                Developed by Ahmed Ihsan Hussein
+              </p>
+            )}
             <div className={`flex gap-1 ${collapsed ? 'flex-col' : ''}`}>
               <button onClick={() => setPref(dark ? 'light' : 'dark')} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center" aria-label={t('account.theme')} title={t('account.theme')}>
                 {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

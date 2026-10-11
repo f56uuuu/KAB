@@ -12,6 +12,8 @@ export const metadata = {
   title: 'KAP — كاب',
   description: 'سرعة .. أمان .. ثقة — رحلات، توصيل، طعام ومتجر في تطبيق واحد.',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'KAP' },
+  authors: [{ name: 'Ahmed Ihsan Hussein' }],
+  creator: 'Ahmed Ihsan Hussein',
 };
 
 export const viewport = {
