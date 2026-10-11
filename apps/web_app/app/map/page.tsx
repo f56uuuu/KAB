@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Briefcase, CloudDownload, Crosshair, Home as HomeIcon, Navigation, Plus, Route as RouteIcon, Star, Trash2, WifiOff, X } from 'lucide-react';
 import { KapMap, type MapMarker } from '@/components/KapMap';
-import { BackButton, useToast } from '@/components/ui';
+import { BackButton, useToast, btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
 import { getCurrentPosition, mapProvider, type LatLng } from '@/lib/maps';
@@ -198,7 +198,7 @@ export default function MyMapPage() {
                   setDraft(null);
                   refresh();
                 }}
-                className="h-12 rounded-2xl bg-accent text-ink font-black"
+                className={btn({ size: 'md', full: true })}
               >
                 {tx.save}
               </button>
@@ -218,14 +218,14 @@ export default function MyMapPage() {
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <a href={`https://waze.com/ul?ll=${active.to.lat},${active.to.lng}&navigate=yes`} target="_blank" rel="noreferrer" className="h-11 rounded-xl bg-[#33CCFF] text-ink text-sm font-extrabold flex items-center justify-center gap-1">
+                <a href={`https://waze.com/ul?ll=${active.to.lat},${active.to.lng}&navigate=yes`} target="_blank" rel="noreferrer" className={`${btn({ size: 'md' })} !bg-[#33CCFF] !shadow-none !px-2`}>
                   <Navigation className="w-4 h-4" />
                   {tx.waze}
                 </a>
-                <a href={`https://www.google.com/maps/dir/?api=1&destination=${active.to.lat},${active.to.lng}&travelmode=driving`} target="_blank" rel="noreferrer" className="h-11 rounded-xl bg-surface text-sm font-extrabold flex items-center justify-center">
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${active.to.lat},${active.to.lng}&travelmode=driving`} target="_blank" rel="noreferrer" className={`${btn({ variant: 'soft', size: 'md' })} !px-2`}>
                   {tx.google}
                 </a>
-                <Link href={`/ride/new?to=${active.to.lat},${active.to.lng}&label=${encodeURIComponent(active.toName)}`} className="h-11 rounded-xl bg-accent text-ink text-sm font-extrabold flex items-center justify-center">
+                <Link href={`/ride/new?to=${active.to.lat},${active.to.lng}&label=${encodeURIComponent(active.toName)}`} className={`${btn({ size: 'md' })} !px-2`}>
                   {tx.ride}
                 </Link>
               </div>
@@ -302,7 +302,7 @@ export default function MyMapPage() {
                 )}
               </div>
 
-              <button onClick={saveArea} disabled={!!dl} className="h-14 rounded-2xl bg-ink text-white font-extrabold flex items-center justify-center gap-2 disabled:opacity-70">
+              <button onClick={saveArea} disabled={!!dl} className={btn({ variant: 'dark', full: true })}>
                 <CloudDownload className="w-5 h-5 text-accent" />
                 {dl ? `${tx.downloading} ${Math.round((dl.done / Math.max(dl.total, 1)) * 100)}%` : tx.download}
               </button>

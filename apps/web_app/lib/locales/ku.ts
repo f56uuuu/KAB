@@ -525,4 +525,7 @@ export const ku: Partial<Record<Key, string>> = {
   'legal.terms': 'مەرجەکانی بەکارهێنان',
   'legal.delete': 'سڕینەوەی هەژمار',
   'legal.title': 'یاسایی',
+  'admin.sidebar.collapse': 'داخستنی لیست',
+  'admin.sidebar.expand': 'کردنەوەی لیست',
+  'account.tour': 'دووبارە گەشتی ناساندن',
 };

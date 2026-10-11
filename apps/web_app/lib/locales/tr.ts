@@ -525,4 +525,7 @@ export const tr: Partial<Record<Key, string>> = {
   'legal.terms': 'Kullanım koşulları',
   'legal.delete': 'Hesabı sil',
   'legal.title': 'Yasal',
+  'admin.sidebar.collapse': 'Menüyü daralt',
+  'admin.sidebar.expand': 'Menüyü genişlet',
+  'account.tour': 'Tanıtım turunu tekrar izle',
 };

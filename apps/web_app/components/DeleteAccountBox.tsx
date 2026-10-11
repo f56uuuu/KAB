@@ -1,5 +1,6 @@
 'use client';
 
+import { btn, Checkbox } from '@/components/ui';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
@@ -10,12 +11,12 @@ import { legalLang } from '@/lib/legal';
 const TXT = {
   ar: {
     signin: 'سجّل الدخول لحذف حسابك', delete: 'حذف حسابي', sure: 'هذا نهائي. سيتم حذف بياناتك الشخصية وتسجيل خروجك من كل الأجهزة.',
-    reason: 'سبب الحذف (اختياري)', confirm: 'نعم، احذف الحساب', cancel: 'تراجع', done: 'تم حذف حسابك.',
+    reason: 'سبب الحذف (اختياري)', understand: 'أفهم أن الحذف نهائي ولا يمكن التراجع عنه', confirm: 'نعم، احذف الحساب', cancel: 'تراجع', done: 'تم حذف حسابك.',
     active_job: 'لديك رحلة أو طلب قيد التنفيذ. أنهِه أو ألغِه ثم أعد المحاولة.', admin_account: 'حسابات الإدارة تُحذف من لوحة السوبر أدمن.', error: 'تعذّر الحذف. حاول مجددًا أو تواصل مع الدعم.',
   },
   en: {
     signin: 'Sign in to delete your account', delete: 'Delete my account', sure: 'This is permanent. Your personal data will be deleted and you will be signed out on every device.',
-    reason: 'Reason (optional)', confirm: 'Yes, delete my account', cancel: 'Cancel', done: 'Your account has been deleted.',
+    reason: 'Reason (optional)', understand: 'I understand this is permanent and can’t be undone', confirm: 'Yes, delete my account', cancel: 'Cancel', done: 'Your account has been deleted.',
     active_job: 'You have a trip or order in progress. Finish or cancel it, then try again.', admin_account: 'Admin accounts are removed from the super admin panel.', error: 'Couldn’t delete. Try again or contact support.',
   },
 };
@@ -28,6 +29,7 @@ export function DeleteAccountBox({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
+  const [sure, setSure] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,11 +65,11 @@ export function DeleteAccountBox({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? '' : 'mt-6 rounded-2xl border border-border p-4'}>
       {!signedIn ? (
-        <Link href="/login?next=/delete-account" className="h-12 rounded-xl bg-ink text-white font-bold flex items-center justify-center">
+        <Link href="/login?next=/delete-account" className={btn({ variant: 'dark', size: 'md', full: true })}>
           {tx.signin}
         </Link>
       ) : !open ? (
-        <button onClick={() => setOpen(true)} className="w-full h-12 rounded-xl border-2 border-danger text-danger font-bold flex items-center justify-center gap-2">
+        <button onClick={() => setOpen(true)} className={btn({ variant: 'danger', size: 'md', full: true })}>
           <Trash2 className="w-4 h-4" />
           {tx.delete}
         </button>
@@ -75,11 +77,14 @@ export function DeleteAccountBox({ compact = false }: { compact?: boolean }) {
         <div className="rounded-2xl bg-danger/10 p-4 flex flex-col gap-3">
           <p className="text-sm font-bold">{tx.sure}</p>
           <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={tx.reason} maxLength={300} className="h-11 rounded-xl border border-border bg-background px-3 outline-none" />
-          <div className="flex gap-2">
-            <button onClick={() => setOpen(false)} disabled={busy} className="flex-1 h-11 rounded-xl bg-surface font-bold text-sm">
+          <Checkbox checked={sure} onChange={setSure}>
+            {tx.understand}
+          </Checkbox>
+          <div className="flex flex-col-reverse sm:flex-row gap-2">
+            <button onClick={() => setOpen(false)} disabled={busy} className={`${btn({ variant: 'soft', size: 'md' })} flex-1`}>
               {tx.cancel}
             </button>
-            <button onClick={run} disabled={busy} className="flex-1 h-11 rounded-xl bg-danger text-white font-bold text-sm disabled:opacity-60">
+            <button onClick={run} disabled={busy || !sure} className={`${btn({ variant: 'dangerSolid', size: 'md' })} flex-1`}>
               {tx.confirm}
             </button>
           </div>

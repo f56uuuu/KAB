@@ -60,7 +60,7 @@ export default function Overview() {
       <PageHead title={t('admin.nav.overview')} sub={new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })} />
       {err && <p className="mb-4 text-danger text-sm font-bold">{err}</p>}
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,190px),1fr))] gap-3 lg:gap-4">
         <Kpi label={t('admin.kpi.active')} value={num(active, locale)} hint={`${t('activity.rides')} ${num(o?.active_rides ?? 0, locale)} / ${t('activity.orders')} ${num(o?.active_orders ?? 0, locale)}`} accent />
         <Kpi label={t('admin.kpi.today')} value={num(today, locale)} hint={`${t('activity.deliveries')} ${num(o?.deliveries_today ?? 0, locale)}`} />
         <Kpi
@@ -73,15 +73,15 @@ export default function Overview() {
         <Kpi label={t('admin.kpi.stores')} value={num(o?.stores ?? 0, locale)} href="/admin/stores" />
       </div>
 
-      <div className="grid xl:grid-cols-5 gap-4 mt-4">
-        <Panel className="xl:col-span-3 overflow-hidden" title={t('admin.live')}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,460px),1fr))] gap-4 mt-4">
+        <Panel className="overflow-hidden" title={t('admin.live')}>
           <p className="px-5 -mt-1 pb-3 text-xs text-muted">{t('admin.live_sub')}</p>
           <div className="relative h-[380px]">
             <KapMap className="absolute inset-0" markers={markers} fitKey={markers.length} zoom={11} />
           </div>
         </Panel>
 
-        <div className="xl:col-span-2 flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-w-0">
           <Panel title={t('admin.chart.title')}>
             <div className="px-5 pb-5">
               <div className="flex gap-4 text-xs font-bold mb-3">

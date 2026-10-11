@@ -548,4 +548,7 @@ export const ar: Partial<Record<Key, string>> = {
   'legal.terms': 'شروط الاستخدام',
   'legal.delete': 'حذف الحساب',
   'legal.title': 'قانوني',
+  'admin.sidebar.collapse': 'طيّ القائمة',
+  'admin.sidebar.expand': 'توسيع القائمة',
+  'account.tour': 'إعادة الجولة التعريفية',
 };

@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Bell, Briefcase, Car, ChevronLeft, FileText, Headphones, Home as HomeIcon, LogOut, Map as MapIcon, Moon, Phone, Shield, Sun, SunMoon } from 'lucide-react';
+import { Bell, Briefcase, Car, ChevronLeft, FileText, Headphones, Home as HomeIcon, LogOut, Map as MapIcon, Sparkles, Moon, Phone, Shield, Sun, SunMoon } from 'lucide-react';
 import { DeleteAccountBox } from '@/components/DeleteAccountBox';
 import { BottomNav } from '@/components/BottomNav';
-import { Button, TopBar, inputCls, useToast } from '@/components/ui';
+import { Button, TopBar, inputCls, useToast, btn } from '@/components/ui';
 import { KMark } from '@/components/Logo';
 import { LANGS, useI18n } from '@/lib/i18n';
 import { useTheme, type ThemePref } from '@/lib/theme';
@@ -74,7 +74,7 @@ export default function AccountPage() {
   return (
     <main className="min-h-screen bg-background pb-28">
       <TopBar title={t('account.title')} />
-      <div className="max-w-md mx-auto px-5 flex flex-col gap-7">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-5 flex flex-col gap-7">
         {/* identity */}
         <section className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-ink text-accent text-2xl font-black flex items-center justify-center shrink-0">
@@ -99,7 +99,7 @@ export default function AccountPage() {
         {/* language */}
         <section>
           <h2 className="font-extrabold mb-3">{t('account.language')}</h2>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {LANGS.map((l) => (
               <button
                 key={l.code}
@@ -173,6 +173,11 @@ export default function AccountPage() {
           />
         </section>
 
+        <button onClick={() => window.location.assign('/home?tour=1')} className="-mt-3 h-12 rounded-2xl border-2 border-dashed border-border hover:border-accent flex items-center justify-center gap-2 text-sm font-bold transition-colors">
+          <Sparkles className="w-4 h-4 text-accent" />
+          {t('account.tour')}
+        </button>
+
         {/* legal */}
         <section className="rounded-2xl border border-border divide-y divide-border overflow-hidden">
           <Row href="/privacy" Icon={Shield} label={t('legal.privacy')} />
@@ -192,7 +197,7 @@ export default function AccountPage() {
               <Button variant="soft" size="md" className="flex-1" onClick={() => setConfirmOut(false)}>
                 {t('common.cancel')}
               </Button>
-              <button onClick={logout} className="flex-1 h-11 rounded-xl bg-danger text-white font-bold text-sm">
+              <button onClick={logout} className={`${btn({ variant: 'dangerSolid', size: 'md' })} flex-1`}>
                 {t('account.logout')}
               </button>
             </div>

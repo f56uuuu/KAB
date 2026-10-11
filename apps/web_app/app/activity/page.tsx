@@ -70,7 +70,7 @@ export default function ActivityPage() {
   return (
     <main className="min-h-screen bg-background pb-28">
       <TopBar title={t('activity.title')} />
-      <div className="max-w-md mx-auto px-5">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-5">
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5 pb-2">
           {(['all', 'ride', 'order', 'delivery'] as const).map((k) => (
             <Chip key={k} active={tab === k} onClick={() => setTab(k)}>

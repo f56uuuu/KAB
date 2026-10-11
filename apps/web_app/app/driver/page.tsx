@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Clock, Navigation, Phone, Power, ShieldAlert, Wallet } from 'lucide-react';
 import { KapMap, type MapMarker } from '@/components/KapMap';
-import { BackButton, Button, Field, inputCls, useToast } from '@/components/ui';
+import { BackButton, Button, Field, inputCls, useToast, btn } from '@/components/ui';
 import { KMark } from '@/components/Logo';
 import { CityPicker } from '@/components/CityPicker';
 import { useI18n } from '@/lib/i18n';
@@ -436,7 +436,7 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
                     href={`https://waze.com/ul?ll=${target.lat},${target.lng}&navigate=yes`}
                     target="_blank"
                     rel="noreferrer"
-                    className="h-12 rounded-xl bg-[#33CCFF] text-ink font-extrabold flex items-center justify-center gap-2"
+                    className={`${btn({ size: 'md' })} !h-12 !bg-[#33CCFF] !shadow-none`}
                   >
                     <Navigation className="w-4 h-4" />
                     {t('driver.waze')}
@@ -445,7 +445,7 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
                     href={`https://www.google.com/maps/dir/?api=1&destination=${target.lat},${target.lng}&travelmode=driving`}
                     target="_blank"
                     rel="noreferrer"
-                    className="h-12 rounded-xl bg-surface font-extrabold flex items-center justify-center gap-2"
+                    className={`${btn({ variant: 'soft', size: 'md' })} !h-12`}
                   >
                     <Navigation className="w-4 h-4" />
                     {t('driver.google')}
@@ -474,13 +474,13 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
 
               <div className="flex gap-2">
                 {job.customer_phone && (
-                  <a href={`tel:${job.customer_phone}`} className="flex-1 h-12 rounded-xl border border-border font-bold flex items-center justify-center gap-2 text-sm">
+                  <a href={`tel:${job.customer_phone}`} className={`${btn({ variant: 'outline', size: 'md' })} flex-1 !h-12`}>
                     <Phone className="w-4 h-4" />
                     {t('driver.call_customer')}
                   </a>
                 )}
                 {job.recipient_phone && (
-                  <a href={`tel:${job.recipient_phone}`} className="flex-1 h-12 rounded-xl border border-border font-bold flex items-center justify-center gap-2 text-sm">
+                  <a href={`tel:${job.recipient_phone}`} className={`${btn({ variant: 'outline', size: 'md' })} flex-1 !h-12`}>
                     <Phone className="w-4 h-4" />
                     {t('driver.call_recipient')}
                   </a>

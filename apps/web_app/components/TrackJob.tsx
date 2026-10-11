@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, Phone, Share2, ShieldCheck, Star, XCircle } from 'lucide-react';
 import { KapMap, type MapMarker } from '@/components/KapMap';
-import { BackButton, Button, Stars, useToast } from '@/components/ui';
+import { BackButton, Button, Stars, useToast, btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
 import { mapProvider, type LatLng } from '@/lib/maps';
@@ -409,7 +409,7 @@ export function TrackJob({ kind, id }: { kind: JobKind; id: string }) {
                 <button
                   onClick={cancel}
                   disabled={busy}
-                  className="flex-1 h-11 rounded-xl bg-danger text-white font-bold text-sm disabled:opacity-50"
+                  className={`${btn({ variant: 'dangerSolid', size: 'md' })} flex-1`}
                 >
                   {t('common.confirm')}
                 </button>
@@ -417,7 +417,7 @@ export function TrackJob({ kind, id }: { kind: JobKind; id: string }) {
             </div>
           )}
           {!active && (
-            <Link href="/home" className="h-12 rounded-2xl bg-surface font-bold flex items-center justify-center mb-2">
+            <Link href="/home" className={`${btn({ variant: 'soft', full: true })} mb-2`}>
               {t('track.back_home')}
             </Link>
           )}

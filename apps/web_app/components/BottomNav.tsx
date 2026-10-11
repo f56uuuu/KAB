@@ -18,7 +18,7 @@ export function BottomNav() {
   const { t } = useI18n();
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border safe-bottom">
-      <div className="max-w-md mx-auto grid grid-cols-4">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto grid grid-cols-4">
         {TABS.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
@@ -26,6 +26,7 @@ export function BottomNav() {
               key={href}
               href={href}
               aria-current={active ? 'page' : undefined}
+              data-tour={`nav-${href.slice(1)}`}
               className="flex flex-col items-center gap-1 pt-2 pb-1 text-[11px] font-bold"
             >
               <span className={`h-8 w-14 rounded-full flex items-center justify-center transition-colors ${active ? 'bg-accent' : ''}`}>

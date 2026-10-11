@@ -1,5 +1,6 @@
 'use client';
 
+import { btn } from '@/components/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 import { KMark } from '@/components/Logo';
@@ -91,7 +92,7 @@ export default function WelcomePage() {
             </button>
           ))}
         </div>
-        <button onClick={start} className="mt-6 mb-2 w-full h-14 rounded-2xl bg-accent text-ink font-extrabold text-lg">
+        <button onClick={start} className={`${btn({ full: true })} mt-6 mb-2 !text-lg`}>
           {translate(choice, 'welcome.start')}
         </button>
       </section>

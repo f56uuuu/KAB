@@ -12,6 +12,28 @@ function systemDark() {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
+/**
+ * Switch the whole page between light and dark in one frame.
+ * Safari (and to a lesser degree Firefox) can leave stale colours behind when CSS variables change while
+ * colour transitions are running, or when composited layers (fixed/sticky bars, maps) skip a repaint.
+ * So: freeze transitions, flip the class + color-scheme together, force a style flush and a repaint.
+ */
+export function applyTheme(d: boolean) {
+  const root = document.documentElement;
+  if (root.classList.contains('dark') === d && root.style.colorScheme === (d ? 'dark' : 'light')) return;
+  root.classList.add('theme-switching');
+  root.classList.toggle('dark', d);
+  root.style.colorScheme = d ? 'dark' : 'light';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', d ? '#0D0D0F' : '#FFFFFF'));
+  void root.offsetHeight; // flush styles with transitions disabled
+  const body = document.body;
+  body.style.transform = 'translateZ(0)'; // re-raster composited layers (WebKit)
+  requestAnimationFrame(() => {
+    body.style.transform = '';
+    requestAnimationFrame(() => root.classList.remove('theme-switching'));
+  });
+}
+
 export function ThemeProvider({ initialPref, children }: { initialPref: ThemePref; children: React.ReactNode }) {
   const [pref, setPrefState] = useState<ThemePref>(initialPref);
   const [dark, setDark] = useState(initialPref === 'dark');
@@ -19,8 +41,7 @@ export function ThemeProvider({ initialPref, children }: { initialPref: ThemePre
   useEffect(() => {
     const apply = () => {
       const d = pref === 'dark' || (pref === 'system' && systemDark());
-      document.documentElement.classList.toggle('dark', d);
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', d ? '#0D0D0F' : '#FFFFFF');
+      applyTheme(d);
       setDark(d);
     };
     apply();

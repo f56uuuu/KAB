@@ -10,6 +10,7 @@ import { sb, useFlags, useUnreadCount } from '@/lib/hooks';
 import { useMyLocation } from '@/lib/location';
 import { ACTIVE, jobHref, type JobKind } from '@/lib/jobs';
 import { StoreMeta } from '@/components/StoreMeta';
+import { Tour } from '@/components/Tour';
 
 type ActiveJob = { kind: JobKind; id: number; status: string; title: string };
 
@@ -96,7 +97,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-background pb-28">
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto">
         {/* slim header */}
         <header className="px-4 safe-top pt-2 flex items-center gap-2">
           <KMark size={34} />
@@ -151,7 +152,7 @@ export default function HomePage() {
         {/* where to */}
         {flags?.RIDE !== false && (
           <section className="px-4 mt-4">
-            <Link href="/ride/new" className="h-14 rounded-2xl bg-surface flex items-center gap-3 px-4 font-extrabold text-lg">
+            <Link href="/ride/new" data-tour="where" className="h-14 rounded-2xl bg-surface flex items-center gap-3 px-4 font-extrabold text-lg">
               <Search className="w-5 h-5 text-muted" />
               <span className="flex-1">{t('home.where_to')}</span>
               <span className="h-9 px-3 rounded-xl bg-ink text-accent text-sm font-black flex items-center">{t('home.now')}</span>
@@ -160,7 +161,7 @@ export default function HomePage() {
         )}
 
         {/* service tiles */}
-        <section className="px-4 mt-4 grid grid-cols-2 gap-3">
+        <section data-tour="services" className="px-4 mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
           {tiles.map((s) => (
             <Link
               key={s.key}
@@ -180,7 +181,7 @@ export default function HomePage() {
 
         {/* personal offline map */}
         <section className="px-4 mt-3">
-          <Link href="/map" className="h-[76px] rounded-3xl bg-ink text-white flex items-center gap-4 px-5 active:scale-[.99] transition-transform">
+          <Link href="/map" data-tour="mymap" className="h-[76px] rounded-3xl bg-ink text-white flex items-center gap-4 px-5 active:scale-[.99] transition-transform">
             <span aria-hidden className="text-[38px] leading-none">🗺️</span>
             <span className="flex-1 min-w-0">
               <span className="block font-black text-lg">{t('home.mymap')}</span>
@@ -276,6 +277,7 @@ export default function HomePage() {
         )}
       </div>
       <BottomNav />
+      <Tour />
     </main>
   );
 }

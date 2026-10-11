@@ -1,5 +1,6 @@
 'use client';
 
+import { btn } from '@/components/ui';
 import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { cartCount, cartSubtotal, useCart } from '@/lib/cart';
@@ -16,7 +17,7 @@ export function CartBar({ bottom = 'bottom-[76px]' }: { bottom?: string }) {
     <div className={`fixed inset-x-0 ${bottom} z-40 px-4`}>
       <Link
         href="/checkout"
-        className="max-w-md mx-auto h-14 rounded-2xl bg-accent text-ink flex items-center gap-3 px-4 shadow-float font-extrabold"
+        className={`${btn({ full: true })} max-w-md md:max-w-2xl lg:max-w-3xl mx-auto !justify-start !gap-3 !px-4 shadow-float`}
       >
         <span className="relative">
           <ShoppingBag className="w-6 h-6" />

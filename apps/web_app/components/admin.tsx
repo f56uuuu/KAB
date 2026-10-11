@@ -14,6 +14,8 @@ import {
   Languages,
   LogOut,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   ReceiptText,
   ShieldAlert,
   SlidersHorizontal,
@@ -24,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import { KMark } from '@/components/Logo';
-import { Button, Spinner } from '@/components/ui';
+import { Button, Spinner, btn } from '@/components/ui';
 import { LANGS, useI18n } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme';
 import { sb } from '@/lib/hooks';
@@ -53,6 +55,25 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const { dark, setPref } = useTheme();
   const path = usePathname();
   const [me, setMe] = useState<Me | null | 'denied'>(null);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem('kap_admin_sidebar') === 'collapsed');
+    } catch {
+      /* storage blocked */
+    }
+  }, []);
+
+  function toggleSidebar() {
+    const next = !collapsed;
+    setCollapsed(next);
+    try {
+      localStorage.setItem('kap_admin_sidebar', next ? 'collapsed' : 'open');
+    } catch {
+      /* storage blocked */
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -87,7 +108,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <Button variant="soft" size="md" onClick={signOut}>
             {t('admin.signout')}
           </Button>
-          <Link href="/home" className="h-11 px-4 rounded-xl bg-accent text-ink font-bold text-sm flex items-center">
+          <Link href="/home" className={btn({ size: 'md' })}>
             {t('driver.back_to_app')}
           </Link>
         </div>
@@ -101,42 +122,62 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <MeCtx.Provider value={me}>
       <div className="min-h-screen bg-surface/60 lg:flex">
-        {/* sidebar (desktop) */}
-        <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-ink text-white sticky top-0 h-screen">
-          <div className="px-6 h-20 flex items-center gap-3 border-b border-white/10">
-            <KMark size={36} />
-            <span className="flex flex-col leading-tight">
-              <span className="font-black text-lg">{t('admin.title')}</span>
-              <span className="text-[11px] font-extrabold text-accent">{me.role === 'super_admin' ? 'SUPER ADMIN' : 'ADMIN'}</span>
-            </span>
+        {/* sidebar (desktop) — collapses to icons; the content column is flex-1/min-w-0 so it reflows instantly */}
+        <aside
+          className={`hidden lg:flex shrink-0 flex-col bg-ink text-white sticky top-0 h-screen transition-[width] duration-200 ease-out ${collapsed ? 'w-[76px]' : 'w-64'}`}
+          onTransitionEnd={(e) => e.propertyName === 'width' && window.dispatchEvent(new Event('resize'))}
+        >
+          <div className={`h-20 flex items-center gap-3 border-b border-white/10 ${collapsed ? 'px-0 justify-center' : 'px-5'}`}>
+            {!collapsed && (
+              <>
+                <KMark size={36} />
+                <span className="flex-1 min-w-0 flex flex-col leading-tight">
+                  <span className="font-black text-lg truncate">{t('admin.title')}</span>
+                  <span className="text-[11px] font-extrabold text-accent">{me.role === 'super_admin' ? 'SUPER ADMIN' : 'ADMIN'}</span>
+                </span>
+              </>
+            )}
+            <button
+              onClick={toggleSidebar}
+              aria-label={collapsed ? t('admin.sidebar.expand') : t('admin.sidebar.collapse')}
+              aria-expanded={!collapsed}
+              title={collapsed ? t('admin.sidebar.expand') : t('admin.sidebar.collapse')}
+              className="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center shrink-0"
+            >
+              {collapsed ? <PanelLeftOpen className="w-5 h-5 rtl:-scale-x-100" /> : <PanelLeftClose className="w-5 h-5 rtl:-scale-x-100" />}
+            </button>
           </div>
-          <nav className="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 flex flex-col gap-1">
             {nav.map(({ href, key, Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className={`relative h-11 rounded-xl px-3 flex items-center gap-3 font-bold text-sm transition-colors ${
+                title={collapsed ? t(key as any) : undefined}
+                aria-label={collapsed ? t(key as any) : undefined}
+                className={`relative h-11 rounded-xl flex items-center gap-3 font-bold text-sm transition-colors ${collapsed ? 'justify-center px-0' : 'px-3'} ${
                   active(href) ? 'bg-accent text-ink' : 'text-white/75 hover:bg-white/10 hover:text-white'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                {t(key as any)}
+                <Icon className="w-5 h-5 shrink-0" />
+                {!collapsed && <span className="truncate">{t(key as any)}</span>}
               </Link>
             ))}
           </nav>
           <div className="p-3 border-t border-white/10 flex flex-col gap-1">
-            <p className="px-3 text-xs text-white/50 truncate" dir="ltr">
-              {me.name}
-            </p>
-            <div className="flex gap-1">
-              <button onClick={() => setPref(dark ? 'light' : 'dark')} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center" aria-label={t('account.theme')}>
+            {!collapsed && (
+              <p className="px-3 text-xs text-white/50 truncate" dir="ltr">
+                {me.name}
+              </p>
+            )}
+            <div className={`flex gap-1 ${collapsed ? 'flex-col' : ''}`}>
+              <button onClick={() => setPref(dark ? 'light' : 'dark')} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center" aria-label={t('account.theme')} title={t('account.theme')}>
                 {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-              <button onClick={() => setLang(nextLang.code)} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center gap-1 text-xs font-bold" aria-label={t('account.language')}>
+              <button onClick={() => setLang(nextLang.code)} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center gap-1 text-xs font-bold" aria-label={t('account.language')} title={nextLang.name}>
                 <Languages className="w-5 h-5" />
-                {nextLang.name}
+                {!collapsed && nextLang.name}
               </button>
-              <button onClick={signOut} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center" aria-label={t('admin.signout')}>
+              <button onClick={signOut} className="flex-1 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center" aria-label={t('admin.signout')} title={t('admin.signout')}>
                 <LogOut className="w-5 h-5 rtl:rotate-180" />
               </button>
             </div>
@@ -171,7 +212,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </nav>
         </header>
 
-        <main className="flex-1 min-w-0 p-4 lg:p-8">{children}</main>
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </MeCtx.Provider>
   );

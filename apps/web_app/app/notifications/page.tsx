@@ -51,7 +51,7 @@ export default function NotificationsPage() {
           ) : null
         }
       />
-      <div className="max-w-md mx-auto px-5">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-5">
         {items && items.length === 0 && <Empty icon={<BellOff className="w-7 h-7" />} title={t('notif.empty')} />}
         <ul className="divide-y divide-border">
           {(items ?? []).map((n) => {

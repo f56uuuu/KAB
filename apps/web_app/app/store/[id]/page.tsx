@@ -77,7 +77,7 @@ export default function StorePage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto -mt-6 relative bg-background rounded-t-sheet px-5 pt-6">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto -mt-6 relative bg-background rounded-t-sheet px-5 pt-6">
         <h1 className="text-2xl font-black leading-tight">{pick(store.name_ar, store.name)}</h1>
         <p className="text-sm text-muted mt-0.5">{store.address}</p>
         <StoreMeta store={store} currency={currency} className="mt-2 text-sm" />
@@ -109,7 +109,7 @@ export default function StorePage({ params }: { params: { id: string } }) {
         {sections.map(([name, items]) => (
           <section key={name} id={`sec-${slug(name)}`} className="pt-5 scroll-mt-16">
             <h2 className="font-extrabold text-lg mb-2">{pick(items[0]?.section_ar, name)}</h2>
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-border md:divide-y-0 md:grid md:grid-cols-2 md:gap-x-6 md:[&>li]:border-b md:[&>li]:border-border">
               {items.map((p) => {
                 const q = qtyOf(p.id);
                 return (

@@ -94,7 +94,7 @@ function Food() {
   return (
     <main className="min-h-screen bg-background pb-40">
       <TopBar back="/home" title={market ? t('market.title') : t('food.title')} />
-      <div className="max-w-md mx-auto px-5 flex flex-col gap-4">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-5 flex flex-col gap-4">
         <div className="flex items-center gap-2 text-sm">
           <MapPin className="w-4 h-4 shrink-0" />
           <span className="text-muted">{t('food.delivering_in')}</span>
@@ -123,7 +123,7 @@ function Food() {
         </div>
 
         {stores === null ? (
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {[0, 1, 2].map((i) => (
               <div key={i} className="h-40 rounded-3xl bg-surface animate-pulse" />
             ))}
@@ -131,7 +131,7 @@ function Food() {
         ) : shown.length === 0 ? (
           <Empty icon={<StoreIcon className="w-7 h-7" />} title={t('food.no_stores')} />
         ) : (
-          <div className="flex flex-col gap-5">
+          <div className="grid gap-5 md:grid-cols-2">
             {shown.map((s) => (
               <Link key={s.id} href={`/store/${s.id}`} className={`block ${s.is_open ? '' : 'opacity-60'}`}>
                 <div

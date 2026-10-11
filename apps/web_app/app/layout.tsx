@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const theme: ThemePref = themeCookie === 'light' || themeCookie === 'dark' ? themeCookie : 'system';
 
   return (
-    <html lang={lang} dir={langInfo(lang).dir} className={theme === 'dark' ? 'dark' : undefined} suppressHydrationWarning>
+    <html lang={lang} dir={langInfo(lang).dir} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <meta name="mobile-web-app-capable" content="yes" />

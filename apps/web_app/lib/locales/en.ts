@@ -566,6 +566,9 @@ export const en = {
   'legal.terms': 'Terms of use',
   'legal.delete': 'Delete account',
   'legal.title': 'Legal',
+  'admin.sidebar.collapse': 'Collapse sidebar',
+  'admin.sidebar.expand': 'Expand sidebar',
+  'account.tour': 'Take the quick tour again',
 } as const;
 
 export type Key = keyof typeof en;

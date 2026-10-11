@@ -31,7 +31,7 @@ export default function OffersPage() {
   return (
     <main className="min-h-screen bg-background pb-28">
       <TopBar title={t('offers.title')} />
-      <div className="max-w-md mx-auto px-5 flex flex-col gap-6">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-5 flex flex-col gap-6">
         {banners.length > 0 && (
           <section className="flex flex-col gap-3">
             {banners.map((b) => (
@@ -56,7 +56,7 @@ export default function OffersPage() {
         <section>
           <h2 className="font-extrabold text-lg mb-3">{t('offers.codes')}</h2>
           {coupons && coupons.length === 0 && <Empty icon={<TicketPercent className="w-7 h-7" />} title={t('offers.empty')} />}
-          <ul className="flex flex-col gap-3">
+          <ul className="grid gap-3 md:grid-cols-2">
             {(coupons ?? []).map((c) => (
               <li key={c.id} className="rounded-2xl border border-border flex overflow-hidden">
                 <div className="w-24 bg-accent text-ink flex flex-col items-center justify-center shrink-0 px-2 text-center">

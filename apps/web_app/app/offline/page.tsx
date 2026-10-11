@@ -1,5 +1,6 @@
 'use client';
 
+import { btn } from '@/components/ui';
 import Link from 'next/link';
 import { Map as MapIcon, RotateCw, WifiOff } from 'lucide-react';
 import { KMark } from '@/components/Logo';
@@ -22,11 +23,11 @@ export default function OfflinePage() {
       </span>
       <h1 className="text-2xl font-black">{tx.title}</h1>
       <p className="text-muted max-w-xs leading-7">{tx.sub}</p>
-      <Link href="/map" className="h-14 w-full max-w-xs rounded-2xl bg-accent text-ink font-black flex items-center justify-center gap-2">
+      <Link href="/map" className={`${btn({ full: true })} max-w-xs`}>
         <MapIcon className="w-5 h-5" />
         {tx.map}
       </Link>
-      <button onClick={() => window.location.reload()} className="h-12 w-full max-w-xs rounded-2xl bg-surface font-bold flex items-center justify-center gap-2">
+      <button onClick={() => window.location.reload()} className={`${btn({ variant: 'soft', full: true })} max-w-xs`}>
         <RotateCw className="w-4 h-4" />
         {tx.retry}
       </button>

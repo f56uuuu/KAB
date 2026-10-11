@@ -6,9 +6,38 @@ import { ChevronLeft, Loader2 } from 'lucide-react';
 import { forwardRef, useEffect, useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 
+export type BtnVariant = 'primary' | 'dark' | 'soft' | 'outline' | 'ghost' | 'danger' | 'dangerSolid';
+export type BtnSize = 'lg' | 'md' | 'sm';
+
+/**
+ * One button look for the whole app. Use <Button> for actions and `btn()` for links styled as buttons,
+ * so a "Checkout" link, a "Save" button and a "Navigate" anchor all feel the same.
+ */
+export function btn({ variant = 'primary', size = 'lg', full = false }: { variant?: BtnVariant; size?: BtnSize; full?: boolean } = {}) {
+  const v = {
+    primary: 'bg-accent text-ink shadow-[0_6px_16px_-6px_rgb(255_209_0/0.7)] hover:bg-accentPressed hover:shadow-[0_8px_20px_-6px_rgb(255_209_0/0.8)]',
+    dark: 'bg-ink text-white hover:bg-ink/85 dark:bg-white dark:text-ink dark:hover:bg-white/85',
+    soft: 'bg-surface text-fg hover:bg-border/70',
+    outline: 'border-2 border-border text-fg hover:border-fg bg-transparent',
+    ghost: 'bg-transparent text-fg hover:bg-surface',
+    danger: 'bg-danger/10 text-danger hover:bg-danger/15',
+    dangerSolid: 'bg-danger text-white hover:bg-danger/90',
+  }[variant];
+  const s = { lg: 'h-14 px-6 text-base rounded-2xl', md: 'h-11 px-4 text-sm rounded-xl', sm: 'h-9 px-3 text-sm rounded-lg' }[size];
+  return [
+    'inline-flex items-center justify-center gap-2 font-extrabold select-none',
+    'transition-[background-color,box-shadow,transform,border-color] duration-150 active:scale-[.98]',
+    'disabled:bg-surface disabled:text-muted disabled:shadow-none disabled:border-transparent disabled:cursor-not-allowed disabled:active:scale-100',
+    'aria-disabled:bg-surface aria-disabled:text-muted aria-disabled:shadow-none aria-disabled:pointer-events-none',
+    v,
+    s,
+    full ? 'w-full' : '',
+  ].join(' ');
+}
+
 type BtnProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'dark' | 'soft' | 'ghost' | 'danger';
-  size?: 'lg' | 'md' | 'sm';
+  variant?: BtnVariant;
+  size?: BtnSize;
   loading?: boolean;
   full?: boolean;
 };
@@ -17,26 +46,23 @@ export const Button = forwardRef<HTMLButtonElement, BtnProps>(function Button(
   { variant = 'primary', size = 'lg', loading, full, className = '', children, disabled, ...rest },
   ref,
 ) {
-  const v = {
-    primary: 'bg-accent text-ink hover:bg-accentPressed active:bg-accentPressed',
-    dark: 'bg-ink text-white dark:bg-white dark:text-ink',
-    soft: 'bg-surface text-fg hover:bg-border/60',
-    ghost: 'bg-transparent text-fg hover:bg-surface',
-    danger: 'bg-danger/10 text-danger hover:bg-danger/15',
-  }[variant];
-  const s = { lg: 'h-14 px-6 text-base rounded-2xl', md: 'h-11 px-4 text-sm rounded-xl', sm: 'h-9 px-3 text-sm rounded-lg' }[size];
   return (
-    <button
-      ref={ref}
-      disabled={disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 font-bold transition-colors disabled:opacity-50 disabled:pointer-events-none ${v} ${s} ${full ? 'w-full' : ''} ${className}`}
-      {...rest}
-    >
+    <button ref={ref} disabled={disabled || loading} aria-busy={loading || undefined} className={`${btn({ variant, size, full })} ${className}`} {...rest}>
       {loading && <Loader2 className="w-5 h-5 animate-spin" />}
       {children}
     </button>
   );
 });
+
+/** Themed checkbox with its label; the box itself is styled globally (globals.css). */
+export function Checkbox({ checked, onChange, children, className = '' }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`flex items-start gap-3 cursor-pointer select-none ${className}`}>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5" />
+      <span className="text-sm font-medium leading-6">{children}</span>
+    </label>
+  );
+}
 
 export function Spinner({ className = '' }: { className?: string }) {
   return <Loader2 className={`w-6 h-6 animate-spin text-muted ${className}`} />;
@@ -59,7 +85,7 @@ export function BackButton({ href, className = '' }: { href?: string; className?
 export function TopBar({ title, back, right }: { title?: string; back?: string | true; right?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-30 bg-background safe-top">
-      <div className="h-14 px-4 flex items-center gap-3">
+      <div className="h-14 px-4 flex items-center gap-3 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto">
         {back && <BackButton href={back === true ? undefined : back} className="shadow-none bg-surface w-10 h-10" />}
         {title && <h1 className="font-extrabold text-lg flex-1 truncate">{title}</h1>}
         {!title && <div className="flex-1" />}
