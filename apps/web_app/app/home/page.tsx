@@ -6,7 +6,7 @@ import { Bell, ChevronDown, ChevronLeft, MapPin, Search } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { KMark } from '@/components/Logo';
 import { useI18n } from '@/lib/i18n';
-import { sb, useFlags, useUnreadCount } from '@/lib/hooks';
+import { currentUser, sb, useFlags, useStickyState, useUnreadCount } from '@/lib/hooks';
 import { useMyLocation } from '@/lib/location';
 import { ACTIVE, jobHref, type JobKind } from '@/lib/jobs';
 import { StoreMeta } from '@/components/StoreMeta';
@@ -20,11 +20,11 @@ export default function HomePage() {
   const flags = useFlags();
   const unread = useUnreadCount();
   const loc = useMyLocation();
-  const [banners, setBanners] = useState<any[]>([]);
-  const [coupons, setCoupons] = useState<any[]>([]);
-  const [stores, setStores] = useState<any[]>([]);
-  const [currency, setCurrency] = useState('IQD');
-  const [active, setActive] = useState<ActiveJob[]>([]);
+  const [banners, setBanners] = useStickyState<any[]>('home.banners', []);
+  const [coupons, setCoupons] = useStickyState<any[]>('home.coupons', []);
+  const [stores, setStores] = useStickyState<any[]>('home.stores', []);
+  const [currency, setCurrency] = useStickyState('home.currency', 'IQD');
+  const [active, setActive] = useStickyState<ActiveJob[]>('home.active', []);
   const [slide, setSlide] = useState(0);
   const [myPlaces, setMyPlaces] = useState<SavedPlace[]>([]);
   useEffect(() => setMyPlaces(placeStore.all().filter((p) => p.kind !== 'fav')), []);
@@ -34,9 +34,7 @@ export default function HomePage() {
     s.from('banners').select('*').eq('is_active', true).order('sort').then(({ data }) => setBanners(data ?? []));
     s.from('coupons').select('code,discount_type,discount_value,service_type').eq('is_active', true).then(({ data }) => setCoupons(data ?? []));
     (async () => {
-      const {
-        data: { user },
-      } = await s.auth.getUser();
+      const user = await currentUser();
       if (!user) return;
       const [r, d, o] = await Promise.all([
         s.from('rides').select('id,status,dropoff_address').eq('customer_id', user.id).in('status', ACTIVE.ride).limit(1),

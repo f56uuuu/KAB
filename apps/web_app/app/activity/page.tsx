@@ -6,7 +6,7 @@ import { ReceiptText } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { Chip, Empty, TopBar } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
-import { sb } from '@/lib/hooks';
+import { currentUser, sb, useStickyState } from '@/lib/hooks';
 import { isActive, jobHref, type JobKind } from '@/lib/jobs';
 import { dateTime, money } from '@/lib/format';
 
@@ -14,15 +14,13 @@ type Item = { kind: JobKind; id: number; status: string; title: string; sub: str
 
 export default function ActivityPage() {
   const { t, pick, locale } = useI18n();
-  const [items, setItems] = useState<Item[] | null>(null);
+  const [items, setItems] = useStickyState<Item[] | null>('activity.items', null);
   const [tab, setTab] = useState<'all' | JobKind>('all');
 
   useEffect(() => {
     (async () => {
       const s = sb();
-      const {
-        data: { user },
-      } = await s.auth.getUser();
+      const user = await currentUser();
       if (!user) return;
       const [r, d, o] = await Promise.all([
         s.from('rides').select('*').eq('customer_id', user.id).order('created_at', { ascending: false }).limit(50),

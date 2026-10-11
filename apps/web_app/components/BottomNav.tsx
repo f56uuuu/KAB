@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { Home, ReceiptText, TicketPercent, UserRound } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import type { Key } from '@/lib/locales/en';
@@ -15,7 +16,12 @@ const TABS: { href: string; label: Key; Icon: typeof Home }[] = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useI18n();
+  // load every tab ahead of time so switching is instant
+  useEffect(() => {
+    TABS.forEach(({ href }) => router.prefetch(href));
+  }, [router]);
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border safe-bottom">
       <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto grid grid-cols-4">
@@ -25,6 +31,7 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
+              prefetch
               aria-current={active ? 'page' : undefined}
               data-tour={`nav-${href.slice(1)}`}
               className="flex flex-col items-center gap-1 pt-2 pb-1 text-[11px] font-bold"

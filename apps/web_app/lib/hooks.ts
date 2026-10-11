@@ -1,7 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createSupabaseBrowserClient, isAdminPath } from './supabase-browser';
+
+// In-memory page data kept between screens, so switching tabs shows the last data instantly
+// while fresh data loads in the background. Cleared on sign-out.
+const memo = new Map<string, unknown>();
 
 let client: ReturnType<typeof createSupabaseBrowserClient> | null = null;
 let adminClient: ReturnType<typeof createSupabaseBrowserClient> | null = null;
@@ -11,8 +15,38 @@ export function sb() {
     adminClient ??= createSupabaseBrowserClient(true);
     return adminClient;
   }
-  client ??= createSupabaseBrowserClient();
+  if (!client) {
+    client = createSupabaseBrowserClient();
+    client.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') memo.clear();
+    });
+  }
   return client;
+}
+
+/**
+ * The signed-in user, read from the locally stored session (no network round trip).
+ * Pages use it to know whose data to load; access itself is enforced by the database (RLS).
+ */
+export async function currentUser() {
+  const {
+    data: { session },
+  } = await sb().auth.getSession();
+  return session?.user ?? null;
+}
+
+export function useStickyState<T>(key: string, initial: T): [T, (v: T | ((prev: T) => T)) => void] {
+  const [v, setV] = useState<T>(() => (memo.has(key) ? (memo.get(key) as T) : initial));
+  const set = useCallback(
+    (next: T | ((prev: T) => T)) =>
+      setV((prev) => {
+        const val = typeof next === 'function' ? (next as (p: T) => T)(prev) : next;
+        memo.set(key, val);
+        return val;
+      }),
+    [key],
+  );
+  return [v, set];
 }
 
 export type Flags = Record<string, boolean>;
@@ -35,12 +69,10 @@ export function useFlags() {
 }
 
 export function useProfile() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useStickyState<any>('profile', null);
   useEffect(() => {
     (async () => {
-      const {
-        data: { user },
-      } = await sb().auth.getUser();
+      const user = await currentUser();
       if (!user) return;
       const { data } = await sb().from('profiles').select('*').eq('id', user.id).maybeSingle();
       setProfile({ ...(data ?? {}), id: user.id, is_anonymous: (user as any).is_anonymous, email: user.email });
@@ -50,13 +82,11 @@ export function useProfile() {
 }
 
 export function useUnreadCount() {
-  const [n, setN] = useState(0);
+  const [n, setN] = useStickyState('unread', 0);
   useEffect(() => {
     let channel: any;
     (async () => {
-      const {
-        data: { user },
-      } = await sb().auth.getUser();
+      const user = await currentUser();
       if (!user) return;
       const load = () =>
         sb()

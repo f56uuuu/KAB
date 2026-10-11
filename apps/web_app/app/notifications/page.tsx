@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { BellOff } from 'lucide-react';
 import { Empty, TopBar } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
-import { sb } from '@/lib/hooks';
+import { currentUser, sb, useStickyState } from '@/lib/hooks';
 import { jobHref, type JobKind } from '@/lib/jobs';
 import { timeAgo } from '@/lib/format';
 
@@ -13,13 +13,11 @@ const ICON: Record<string, string> = { ride: '🚖', delivery: '📦', order: '�
 
 export default function NotificationsPage() {
   const { t, pick, locale } = useI18n();
-  const [items, setItems] = useState<any[] | null>(null);
+  const [items, setItems] = useStickyState<any[] | null>('notif.items', null);
   const [uid, setUid] = useState<string | null>(null);
 
   async function load() {
-    const {
-      data: { user },
-    } = await sb().auth.getUser();
+    const user = await currentUser();
     if (!user) return;
     setUid(user.id);
     const { data } = await sb().from('notifications').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);

@@ -6,12 +6,12 @@ import { Copy, TicketPercent } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { Empty, TopBar, useToast } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
-import { sb } from '@/lib/hooks';
+import { sb, useStickyState } from '@/lib/hooks';
 
 export default function OffersPage() {
   const { t, pick, locale } = useI18n();
-  const [banners, setBanners] = useState<any[]>([]);
-  const [coupons, setCoupons] = useState<any[] | null>(null);
+  const [banners, setBanners] = useStickyState<any[]>('offers.banners', []);
+  const [coupons, setCoupons] = useStickyState<any[] | null>('offers.coupons', null);
   const { toast, toastNode } = useToast();
 
   useEffect(() => {

@@ -9,7 +9,7 @@ import { ReportButton, ReportSheet } from '@/components/ReportSheet';
 import { REPORT_EMOJI, reportsNear, type ReportKind, type RoadReport } from '@/lib/reports';
 import { BackButton, useToast, btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
-import { sb } from '@/lib/hooks';
+import { currentUser, sb } from '@/lib/hooks';
 import { getCurrentPosition, mapProvider, type LatLng, type Place } from '@/lib/maps';
 import { downloadArea, places as placeStore, storageEstimate, trips as tripStore, type SavedPlace, type SavedTrip } from '@/lib/offline';
 
@@ -89,9 +89,7 @@ export default function MyMapPage() {
     // bring home/work saved in the account onto the device
     (async () => {
       try {
-        const {
-          data: { user },
-        } = await sb().auth.getUser();
+        const user = await currentUser();
         if (!user) return;
         const { data } = await sb().from('addresses').select('*').eq('profile_id', user.id);
         (data ?? []).forEach((a: any) => {

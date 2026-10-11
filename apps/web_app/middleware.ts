@@ -36,10 +36,16 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   const isPublic = PUBLIC.some((p) => path === p || path.startsWith(p + '/'));
+  // Public pages need no session check at all.
+  if (isPublic && path !== '/login') return response;
+
+  // Customer pages: read the session from the cookie (refreshed only when it has expired) instead of
+  // asking the auth server on every screen change. Data itself is protected by row-level security.
+  // The admin area keeps the stricter server-verified check.
+  const user = adminArea
+    ? (await supabase.auth.getUser()).data.user
+    : (await supabase.auth.getSession()).data.session?.user ?? null;
 
   if (path === '/') {
     return NextResponse.redirect(new URL(user ? '/home' : '/login', request.url));

@@ -34,8 +34,8 @@ export function DeleteAccountBox({ compact = false }: { compact?: boolean }) {
 
   useEffect(() => {
     sb()
-      .auth.getUser()
-      .then(({ data }) => setSignedIn(!!data.user))
+      .auth.getSession()
+      .then(({ data }) => setSignedIn(!!data.session?.user))
       .catch(() => setSignedIn(false));
   }, []);
 

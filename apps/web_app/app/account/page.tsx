@@ -9,7 +9,7 @@ import { Button, TopBar, inputCls, useToast, btn } from '@/components/ui';
 import { KMark } from '@/components/Logo';
 import { LANGS, useI18n } from '@/lib/i18n';
 import { useTheme, type ThemePref } from '@/lib/theme';
-import { sb, useProfile } from '@/lib/hooks';
+import { currentUser, sb, useProfile, useStickyState } from '@/lib/hooks';
 import { getCurrentPosition, mapProvider } from '@/lib/maps';
 
 export default function AccountPage() {
@@ -17,8 +17,8 @@ export default function AccountPage() {
   const { pref, setPref } = useTheme();
   const profile = useProfile();
   const [name, setName] = useState('');
-  const [places, setPlaces] = useState<any[]>([]);
-  const [support, setSupport] = useState<string | null>(null);
+  const [places, setPlaces] = useStickyState<any[]>('account.places', []);
+  const [support, setSupport] = useStickyState<string | null>('account.support', null);
   const [confirmOut, setConfirmOut] = useState(false);
   const { toast, toastNode } = useToast();
 
@@ -28,9 +28,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     (async () => {
-      const {
-        data: { user },
-      } = await sb().auth.getUser();
+      const user = await currentUser();
       if (!user) return;
       const [{ data: a }, { data: s }] = await Promise.all([
         sb().from('addresses').select('*').eq('profile_id', user.id),
