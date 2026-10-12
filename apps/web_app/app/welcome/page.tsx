@@ -45,21 +45,27 @@ export default function WelcomePage() {
   }
 
   return (
-    <main className="min-h-[100dvh] bg-ink text-white flex flex-col relative overflow-hidden" dir={info.dir}>
-      {/* the livery stripe */}
-      <div
-        aria-hidden
-        className="absolute -top-24 h-[140%] w-40 bg-accent opacity-95"
-        style={{ insetInlineEnd: '-56px', transform: `skewX(${info.dir === 'rtl' ? 24 : -24}deg)` }}
-      />
-      <div className="relative flex-1 flex flex-col px-7 pt-[max(env(safe-area-inset-top),48px)]">
-        <KMark size={64} />
-        <div className="mt-16 h-24" aria-live="polite">
-          <h1 key={i} className="text-6xl font-black animate-greet" dir="auto">
+    <main className="min-h-[100dvh] bg-accent text-ink flex flex-col relative overflow-hidden" dir={info.dir}>
+      {/* the road that ends at your pin */}
+      <div className="relative flex-1 flex flex-col px-7 pt-[max(env(safe-area-inset-top),40px)] pb-8">
+      <svg aria-hidden viewBox="-20 120 360 360" preserveAspectRatio="xMidYMid meet" className={`flex-1 min-h-[110px] w-full max-h-[300px] ${info.dir === 'rtl' ? '' : '-scale-x-100'}`}>
+        <path className="kap-road" d="M-20 470 C 70 470, 110 400, 190 390 S 320 350, 300 280 S 170 220, 250 160" fill="none" stroke="#0D0D0F" strokeWidth="14" strokeLinecap="round" />
+        <path d="M-20 470 C 70 470, 110 400, 190 390 S 320 350, 300 280 S 170 220, 250 160" fill="none" stroke="#FFD100" strokeWidth="2" strokeDasharray="10 12" strokeLinecap="round" />
+        <g className="kap-pin">
+          <path d="M250 164c-12-14-20-24-20-34a20 20 0 1 1 40 0c0 10-8 20-20 34Z" fill="#0D0D0F" />
+          <circle cx="250" cy="130" r="7" fill="#FFD100" />
+        </g>
+      </svg>
+        <div className="mt-4 flex items-center gap-4 h-20" aria-live="polite">
+          <KMark size={56} className="rounded-2xl" />
+          <h1 key={i} className="text-6xl font-bold animate-greet leading-tight" dir="auto">
             {greeting}
           </h1>
         </div>
-        <p className="text-neutralGray text-lg font-medium">{translate(choice, 'common.tagline')}</p>
+        <p className="text-xl leading-relaxed flex flex-col">
+          <span>{translate(choice, 'welcome.line1')}</span>
+          <span>{translate(choice, 'welcome.line2')}</span>
+        </p>
       </div>
 
       <section
@@ -67,7 +73,7 @@ export default function WelcomePage() {
           showPicker ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}
       >
-        <h2 className="text-xl font-extrabold mb-1">{translate(choice, 'welcome.choose')}</h2>
+        <h2 className="text-xl font-semibold mb-1">{translate(choice, 'welcome.choose')}</h2>
         <div className="grid grid-cols-2 gap-3 mt-4" role="radiogroup">
           {LANGS.map((l) => (
             <button
@@ -76,11 +82,11 @@ export default function WelcomePage() {
               aria-checked={choice === l.code}
               onClick={() => setChoice(l.code)}
               className={`relative h-16 rounded-2xl border-2 px-4 flex flex-col items-start justify-center text-start transition-colors ${
-                choice === l.code ? 'border-fg bg-surface' : 'border-border'
+                choice === l.code ? 'border-ink dark:border-accent bg-surface' : 'border-border'
               }`}
               dir={l.dir}
             >
-              <span className="font-extrabold text-lg leading-tight">{l.name}</span>
+              <span className="font-semibold text-lg leading-tight">{l.name}</span>
               {detected === l.code && (
                 <span className="text-[11px] text-muted leading-tight">{translate(l.code, 'welcome.detected')}</span>
               )}
@@ -92,7 +98,7 @@ export default function WelcomePage() {
             </button>
           ))}
         </div>
-        <button onClick={start} className={`${btn({ full: true })} mt-6 mb-2 !text-lg`}>
+        <button onClick={start} className={`${btn({ variant: 'dark', full: true })} mt-6 mb-2 !text-lg`}>
           {translate(choice, 'welcome.start')}
         </button>
       </section>

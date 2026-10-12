@@ -56,21 +56,37 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-[100dvh] flex flex-col bg-ink">
-      <section className="relative overflow-hidden px-7 pt-[max(env(safe-area-inset-top),40px)] pb-14 text-white kap-slash">
+      <section className="relative overflow-hidden h-[42vh] min-h-[280px] shrink-0 px-6 pt-[max(env(safe-area-inset-top),24px)] text-white">
+        {/* a city at night with your route to the pin */}
+        <svg aria-hidden viewBox="0 0 390 400" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 w-full h-full">
+          <g stroke="#26262C" strokeWidth="10" fill="none">
+            <path d="M-10 120 L400 60" /><path d="M-10 260 L400 220" /><path d="M-10 380 L400 340" />
+            <path d="M70 -10 L120 420" /><path d="M210 -10 L250 420" /><path d="M330 -10 L360 420" />
+          </g>
+          <g stroke="#1B1B20" strokeWidth="4" fill="none">
+            <path d="M-10 190 L400 140" /><path d="M150 -10 L180 420" /><path d="M-10 320 L400 290" />
+          </g>
+          <path d="M318 330 C 290 300, 260 240, 232 236 S 160 250, 140 180 S 110 110, 96 82" fill="none" stroke="#FFD100" strokeWidth="6" strokeLinecap="round" />
+          <circle cx="318" cy="330" r="9" fill="#0D0D0F" stroke="#FFD100" strokeWidth="4" />
+          <path d="M96 84c-11-13-18-22-18-31a18 18 0 1 1 36 0c0 9-7 18-18 31Z" fill="#FFD100" />
+          <circle cx="96" cy="53" r="6" fill="#0D0D0F" />
+        </svg>
         <div className="relative z-10 flex items-center justify-between">
-          <KMark size={52} />
-          <Link href="/welcome" className="flex items-center gap-1.5 text-sm text-neutralGray h-10 px-3 rounded-full bg-white/10">
+          <span className="flex items-center gap-2.5">
+            <KMark size={44} className="rounded-xl" />
+            <span className="text-2xl font-bold">كاب</span>
+          </span>
+          <Link href="/welcome" className="flex items-center gap-1.5 text-sm text-white/80 h-10 px-3 rounded-full bg-white/10 backdrop-blur">
             <Globe className="w-4 h-4" />
             <span>{langInfo(lang).name}</span>
           </Link>
         </div>
-        <p className="relative z-10 mt-10 text-4xl font-black leading-tight max-w-[14ch]">{t('common.tagline')}</p>
       </section>
 
-      <form onSubmit={submit} className="flex-1 -mt-6 rounded-t-sheet bg-background px-6 pt-8 safe-bottom flex flex-col gap-4">
+      <form onSubmit={submit} className="relative flex-1 -mt-8 rounded-t-[32px] bg-background dark:bg-surface px-6 pt-8 safe-bottom flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold">{t('login.title')}</h1>
-          <p className="text-muted mt-1">{t('login.subtitle')}</p>
+          <h1 className="text-[26px] font-semibold">{t('login.hello')}</h1>
+          <p className="text-muted mt-1">{t('login.hello_sub')}</p>
         </div>
         {sms ? (
           <PhoneVerify mode="login" onDone={goNext} />
@@ -83,7 +99,7 @@ export default function LoginPage() {
             aria-label={t('login.country')}
             value={country}
             onChange={(e) => setCountry(e.target.value)}
-            className="h-14 rounded-2xl border border-border bg-surface px-3 font-bold text-base"
+            className="h-14 rounded-[18px] border-[1.5px] border-border bg-surface px-3 font-semibold text-base"
           >
             {COUNTRIES.map((c) => (
               <option key={c.code} value={c.code}>
@@ -100,7 +116,7 @@ export default function LoginPage() {
             onChange={(e) => setPhone(e.target.value)}
             placeholder={t('login.placeholder')}
             aria-invalid={!!error}
-            className="flex-1 min-w-0 h-14 rounded-2xl border border-border bg-background px-4 text-lg font-bold tracking-wide outline-none focus:border-fg"
+            className="flex-1 min-w-0 h-14 rounded-[18px] border-[1.5px] border-border bg-background px-4 text-lg font-semibold tracking-wide outline-none focus:border-fg aria-[invalid=true]:border-danger"
           />
         </div>
         {error && (
@@ -108,12 +124,12 @@ export default function LoginPage() {
             {error}
           </p>
         )}
-        <Button type="submit" loading={loading} full>
+        <Button type="submit" variant="dark" loading={loading} full>
           {loading ? t('login.signing_in') : t('login.continue')}
         </Button>
           </>
         )}
-        <p className="text-xs text-muted text-center mt-auto pb-2 leading-6">
+        <p className="text-xs text-muted text-center mt-2 pb-2 leading-6">
           {t('login.terms')}{' '}
           <Link href="/terms" className="underline font-bold">
             {t('legal.terms')}

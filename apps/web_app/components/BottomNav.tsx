@@ -23,8 +23,8 @@ export function BottomNav() {
     TABS.forEach(({ href }) => router.prefetch(href));
   }, [router]);
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border safe-bottom">
-      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto grid grid-cols-4">
+    <nav className="fixed bottom-0 inset-x-0 z-40 px-4 pointer-events-none pb-[max(env(safe-area-inset-bottom),12px)]">
+      <div className="pointer-events-auto max-w-md md:max-w-2xl lg:max-w-3xl mx-auto h-16 rounded-[26px] bg-ink dark:bg-raised dark:border dark:border-border shadow-[0_16px_30px_rgb(13_13_15/0.25)] grid grid-cols-4 items-center px-2">
         {TABS.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
@@ -33,13 +33,20 @@ export function BottomNav() {
               href={href}
               prefetch
               aria-current={active ? 'page' : undefined}
+              aria-label={active ? undefined : t(label)}
               data-tour={`nav-${href.slice(1)}`}
-              className="flex flex-col items-center gap-1 pt-2 pb-1 text-[11px] font-bold"
+              className="justify-self-center"
             >
-              <span className={`h-8 w-14 rounded-full flex items-center justify-center transition-colors ${active ? 'bg-accent' : ''}`}>
-                <Icon className={`w-6 h-6 ${active ? 'text-ink' : 'text-muted'}`} strokeWidth={active ? 2.4 : 2} />
-              </span>
-              <span className={active ? 'text-fg' : 'text-muted'}>{t(label)}</span>
+              {active ? (
+                <span className="h-12 rounded-[18px] bg-accent text-ink flex items-center gap-1.5 px-3.5 text-[13px] font-semibold whitespace-nowrap">
+                  <Icon className="w-5 h-5" strokeWidth={2.3} />
+                  {t(label)}
+                </span>
+              ) : (
+                <span className="w-12 h-12 rounded-[18px] flex items-center justify-center text-neutralGray hover:text-white transition-colors">
+                  <Icon className="w-[22px] h-[22px]" strokeWidth={2} />
+                </span>
+              )}
             </Link>
           );
         })}

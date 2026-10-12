@@ -576,6 +576,20 @@ export const en = {
   'admin.sidebar.collapse': 'Collapse sidebar',
   'admin.sidebar.expand': 'Expand sidebar',
   'account.tour': 'Take the quick tour again',
+  'home.where_long': 'Where would you like to go?',
+  'home.search_place': 'Search for an address or place',
+  'home.need_today': 'What do you need today?',
+  'home.ride_sub2': 'The nearest captain reaches you in minutes',
+  'home.offers_today': "Today's offers",
+  'home.use': 'Copy code',
+  'home.tap_go': 'Start directions',
+  'home.add_place': 'Add address',
+  'home.nearby': 'Restaurants near you',
+  'login.hello': 'Welcome to KAP',
+  'login.hello_sub': 'Enter your phone number to continue.',
+  'welcome.line1': 'Move, order and send',
+  'welcome.line2': 'from one app.',
+  'welcome.where': 'Available in Iraq, UAE and Syria',
 } as const;
 
 export type Key = keyof typeof en;

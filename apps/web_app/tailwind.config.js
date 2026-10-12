@@ -7,7 +7,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        tajawal: ['Tajawal', 'system-ui', 'sans-serif'],
+        kap: ['"Readex Pro"', 'Tahoma', 'system-ui', 'sans-serif'],
       },
       colors: {
         // brand (fixed in both themes)
