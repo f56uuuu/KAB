@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Printer, Trash2 } from 'lucide-react';
 import { CityOptions } from '@/components/CityPicker';
 import { Modal, PageHead, Panel, cellInput } from '@/components/admin';
 import { StoreMeta } from '@/components/StoreMeta';
@@ -14,12 +14,13 @@ const CATS: string[] = [...FOOD_CATS, ...MARKET_CATS];
 const EMPTY_STORE = { name: '', name_ar: '', category: CATS[0] ?? 'burger', emoji: '🍔', color: '#FFD100', city_id: '', delivery_fee: 1500, min_order: 0, delivery_minutes: 30, latitude: '', longitude: '', address: '', is_open: true, is_active: true, sort: 100 };
 
 export default function StoresAdmin() {
-  const { t, pick } = useI18n();
+  const { t, pick, lang } = useI18n();
   const [stores, setStores] = useState<any[] | null>(null);
   const [cities, setCities] = useState<any[]>([]);
   const [city, setCity] = useState<number | 'all'>('all');
   const [edit, setEdit] = useState<any>(null);
   const [menu, setMenu] = useState<any>(null);
+  const [device, setDevice] = useState<any>(null);
   const { toast, toastNode } = useToast();
 
   const load = useCallback(async () => {
@@ -109,6 +110,10 @@ export default function StoresAdmin() {
                 {t('admin.stores.menu')}
               </Button>
             </div>
+            <Button size="sm" variant="outline" full onClick={() => setDevice(s)}>
+              <Printer className="w-4 h-4" />
+              {devTxt(lang).button}
+            </Button>
           </Panel>
         ))}
       </div>
@@ -167,6 +172,10 @@ export default function StoresAdmin() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal open={!!device} onClose={() => setDevice(null)} title={device ? `${devTxt(lang).button}: ${pick(device.name_ar, device.name)}` : ''}>
+        {device && <DeviceLink store={device} toast={toast} />}
       </Modal>
 
       <Modal open={!!menu} onClose={() => setMenu(null)} title={menu ? `${t('admin.stores.menu')}: ${pick(menu.name_ar, menu.name)}` : ''}>
@@ -234,6 +243,96 @@ function MenuEditor({ store, toast }: { store: any; toast: (m: string) => void }
         <Plus className="w-4 h-4" />
         {t('admin.stores.add_product')}
       </Button>
+    </div>
+  );
+}
+
+const DEV = {
+  ar: {
+    button: 'جهاز المطعم',
+    how: 'لربط جهاز المطعم (مثل جهاز الطباعة المحمول): افتح على الجهاز الرابط التالي، سجّل الدخول، ثم أدخل الرمز.',
+    make: 'إنشاء رمز ربط',
+    valid: 'صالح لمدة 30 دقيقة ولمرة واحدة.',
+    linked: 'الأجهزة المرتبطة',
+    none: 'لا يوجد جهاز مرتبط بعد. الطلبات تُقبل تلقائيًا في وضع التجربة حتى يُربط جهاز.',
+    remove: 'إلغاء الربط',
+    failed: 'تعذّر تنفيذ العملية.',
+  },
+  en: {
+    button: 'Store device',
+    how: 'To link the store device (such as a handheld printer terminal): open this link on it, sign in, then enter the code.',
+    make: 'Create link code',
+    valid: 'Works once, for 30 minutes.',
+    linked: 'Linked devices',
+    none: 'No device linked yet. In demo mode orders are accepted automatically until a device is linked.',
+    remove: 'Unlink',
+    failed: 'That did not work.',
+  },
+};
+function devTxt(lang: string) {
+  return lang === 'ar' || lang === 'ku' ? DEV.ar : DEV.en;
+}
+
+function DeviceLink({ store, toast }: { store: any; toast: (m: string) => void }) {
+  const { lang, locale } = useI18n();
+  const tx = devTxt(lang);
+  const [code, setCode] = useState<string | null>(null);
+  const [staff, setStaff] = useState<any[] | null>(null);
+  const load = useCallback(async () => {
+    const { data } = await sb().rpc('admin_store_staff', { p_store: store.id });
+    setStaff((data as any[]) ?? []);
+  }, [store.id]);
+  useEffect(() => {
+    load();
+  }, [load]);
+  async function make() {
+    const { data, error } = await sb().rpc('admin_store_pair_code', { p_store: store.id });
+    if (error) return toast(tx.failed);
+    setCode(String(data));
+  }
+  async function unlink(uid: string) {
+    const { error } = await sb().rpc('admin_store_staff_remove', { p_store: store.id, p_user: uid });
+    if (error) return toast(tx.failed);
+    load();
+  }
+  const link = typeof window !== 'undefined' ? `${window.location.origin}/merchant` : '/merchant';
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted leading-relaxed">{tx.how}</p>
+      <bdi dir="ltr" className="block rounded-xl bg-surface px-4 py-3 font-semibold text-center select-all break-all">
+        {link}
+      </bdi>
+      {code ? (
+        <div className="rounded-2xl bg-ink text-white p-5 text-center">
+          <bdi dir="ltr" className="block text-5xl font-bold tracking-[0.3em] text-accent">
+            {code}
+          </bdi>
+          <p className="text-sm text-white/70 mt-2">{tx.valid}</p>
+        </div>
+      ) : null}
+      <Button variant={code ? 'soft' : 'primary'} full onClick={make}>
+        {tx.make}
+      </Button>
+      <div>
+        <p className="text-sm font-bold mb-2">{tx.linked}</p>
+        {staff === null ? null : staff.length === 0 ? (
+          <p className="text-sm text-muted">{tx.none}</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {staff.map((m) => (
+              <li key={m.user_id} className="rounded-xl border border-border px-3 py-2.5 flex items-center gap-3">
+                <span className="flex-1 min-w-0">
+                  <span className="block font-semibold truncate">{m.label || m.phone || m.user_id.slice(0, 8)}</span>
+                  <span className="block text-xs text-muted">{new Date(m.created_at).toLocaleString(locale)}</span>
+                </span>
+                <Button size="sm" variant="danger" onClick={() => unlink(m.user_id)}>
+                  {tx.remove}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

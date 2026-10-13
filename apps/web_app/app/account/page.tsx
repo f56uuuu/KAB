@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { BadgeCheck, Bell, Briefcase, Car, ChevronLeft, FileText, Headphones, Home as HomeIcon, LogOut, Map as MapIcon, Sparkles, Moon, Phone, Shield, Sun, SunMoon } from 'lucide-react';
+import { BadgeCheck, Bell, Store as StoreIcon, Briefcase, Car, ChevronLeft, FileText, Headphones, Home as HomeIcon, LogOut, Map as MapIcon, Sparkles, Moon, Phone, Shield, Sun, SunMoon } from 'lucide-react';
 import { PhoneVerifySheet, otpReady, sheetTxt } from '@/components/PhoneVerify';
 import { DeleteAccountBox } from '@/components/DeleteAccountBox';
 import { BottomNav } from '@/components/BottomNav';
@@ -181,6 +181,7 @@ export default function AccountPage() {
           <Row href="/map" Icon={MapIcon} label={t('account.mymap')} />
           <Row href="/notifications" Icon={Bell} label={t('account.notifications')} />
           <Row href="/driver" Icon={Car} label={t('account.drive')} />
+          <Row href="/merchant" Icon={StoreIcon} label={lang === 'ar' || lang === 'ku' ? 'شاشة المطعم أو المتجر' : 'Store screen'} />
           <Row
             href="/support"
             Icon={Headphones}
