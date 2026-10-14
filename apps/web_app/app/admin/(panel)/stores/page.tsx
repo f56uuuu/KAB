@@ -174,7 +174,7 @@ export default function StoresAdmin() {
         )}
       </Modal>
 
-      <Modal open={!!device} onClose={() => setDevice(null)} title={device ? `${devTxt(lang).button}: ${pick(device.name_ar, device.name)}` : ''}>
+      <Modal open={!!device} onClose={() => setDevice(null)} title={device ? `${devTxt(lang).button}: ${pick(device.name_ar, device.name)} · ${pick(cities.find((c) => c.id === device.city_id)?.name_ar, cities.find((c) => c.id === device.city_id)?.name) ?? ''}` : ''}>
         {device && <DeviceLink store={device} toast={toast} />}
       </Modal>
 

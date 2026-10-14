@@ -7,7 +7,7 @@ import { Button, Spinner, Switch, inputCls, useToast } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb, useStickyState } from '@/lib/hooks';
 import { money, timeAgo } from '@/lib/format';
-import { itemName, merchantTxt, receiptFor, testReceipt, type MerchantOrder, type MerchantStore } from '@/lib/merchant';
+import { itemName, merchantTxt, storeLabel, receiptFor, testReceipt, type MerchantOrder, type MerchantStore } from '@/lib/merchant';
 import { printReceipt, type PaperWidth, type PrintMethod } from '@/lib/receipt';
 
 type Settings = { width: PaperWidth; method: PrintMethod; autoPrint: boolean; copies: number; sound: boolean };
@@ -17,7 +17,7 @@ const ACTIVE = ['PREPARING', 'DRIVER_ASSIGNED', 'PICKED_UP', 'ON_THE_WAY'];
 
 function readSettings(): Settings {
   try {
-    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('kap_merchant_settings') || '{}') };
+    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('kap_merchant_settings_v2') || '{}') };
   } catch {
     return DEFAULTS;
   }
@@ -44,7 +44,7 @@ export default function MerchantPage() {
     setSettingsState((s) => {
       const n = { ...s, ...p };
       try {
-        localStorage.setItem('kap_merchant_settings', JSON.stringify(n));
+        localStorage.setItem('kap_merchant_settings_v2', JSON.stringify(n));
       } catch {
         /* private mode */
       }
@@ -214,14 +214,17 @@ export default function MerchantPage() {
               >
                 {stores.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {lang === 'ar' || lang === 'ku' ? s.name_ar : s.name}
+                    {storeLabel(s, lang)}
                   </option>
                 ))}
               </select>
             ) : (
               <p className="text-lg font-semibold truncate">{store ? (lang === 'ar' || lang === 'ku' ? store.name_ar : store.name) : ''}</p>
             )}
-            <p className={`text-xs ${store?.is_open ? 'text-accent' : 'text-white/60'}`}>{store?.is_open ? tx.open : tx.closed}</p>
+            <p className="text-xs text-white/60 truncate">
+              <span className={store?.is_open ? 'text-accent' : ''}>{store?.is_open ? tx.open : tx.closed}</span>
+              {store && (lang === 'ar' || lang === 'ku' ? store.city_ar : store.city) ? ` · ${lang === 'ar' || lang === 'ku' ? store.city_ar : store.city}` : ''}
+            </p>
           </div>
           {store && <Switch checked={store.is_open} onChange={toggleOpen} label={store.is_open ? tx.open : tx.closed} />}
           <button
@@ -302,7 +305,7 @@ export default function MerchantPage() {
       {!started && (
         <div className="fixed inset-0 z-50 bg-ink/95 text-white flex flex-col items-center justify-center gap-5 p-8 text-center">
           <KMark size={72} className="rounded-2xl" />
-          <p className="text-2xl font-semibold">{store ? (lang === 'ar' || lang === 'ku' ? store.name_ar : store.name) : tx.title}</p>
+          <p className="text-2xl font-semibold">{store ? storeLabel(store, lang) : tx.title}</p>
           <p className="text-white/70 max-w-xs leading-relaxed">{tx.startSub}</p>
           <button onClick={start} className="h-16 px-8 rounded-[20px] bg-accent text-ink text-lg font-semibold flex items-center gap-3">
             <BellRing className="w-6 h-6" />

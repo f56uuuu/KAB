@@ -1,7 +1,14 @@
 import { money } from '@/lib/format';
 import type { ReceiptLine } from '@/lib/receipt';
 
-export type MerchantStore = { id: number; name: string; name_ar: string; is_open: boolean; address: string | null; currency: string };
+export type MerchantStore = { id: number; name: string; name_ar: string; is_open: boolean; address: string | null; currency: string; city?: string; city_ar?: string };
+
+export function storeLabel(s: MerchantStore, lang: string) {
+  const ar = lang === 'ar' || lang === 'ku';
+  const name = ar ? s.name_ar : s.name;
+  const city = ar ? s.city_ar : s.city;
+  return city ? `${name} · ${city}` : name;
+}
 export type MerchantOrder = {
   id: number;
   status: string;
@@ -71,9 +78,9 @@ const AR = {
   paper: 'عرض الورق',
   method: 'طريقة الطباعة',
   rawbt: 'تطبيق RawBT',
-  rawbtSub: 'الأفضل لطابعة الجهاز المدمجة. ثبّته مرة واحدة من متجر Play واختر فيه الطابعة.',
+  rawbtSub: 'يطبع مباشرة على طابعة الجهاز. أول مرة فقط: افتح تطبيق RawBT واختر فيه الطابعة المدمجة.',
   system: 'طباعة أندرويد',
-  systemSub: 'تفتح نافذة الطباعة في النظام إن كان الجهاز يدعمها.',
+  systemSub: 'لا تعمل على أغلب أجهزة الطباعة المحمولة. استخدمها فقط إذا ظهرت طابعتك في نافذة الطباعة.',
   auto: 'اطبع تلقائيًا عند القبول',
   copies: 'عدد النسخ',
   sound: 'صوت تنبيه الطلبات',
@@ -140,9 +147,9 @@ const EN: typeof AR = {
   paper: 'Paper width',
   method: 'Print with',
   rawbt: 'RawBT app',
-  rawbtSub: 'Best for the built-in printer. Install it once from Play Store and choose the printer in it.',
+  rawbtSub: 'Prints straight to the built-in printer. First time only: open the RawBT app and pick the built-in printer.',
   system: 'Android printing',
-  systemSub: "Opens the system print dialog, if the device supports it.",
+  systemSub: 'Does not work on most handheld printer terminals. Use it only if your printer appears in the print dialog.',
   auto: 'Print automatically on accept',
   copies: 'Copies',
   sound: 'New order sound',
@@ -174,7 +181,7 @@ export function receiptFor(o: MerchantOrder, store: MerchantStore, tx: MerchantT
   const when = new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(o.created_at));
   const lines: ReceiptLine[] = [
     { kind: 'title', text: lang === 'ar' || lang === 'ku' ? 'كاب' : 'KAP' },
-    { kind: 'center', text: lang === 'ar' || lang === 'ku' ? store.name_ar : store.name, size: 24, bold: true },
+    { kind: 'center', text: storeLabel(store, lang), size: 24, bold: true },
     { kind: 'rule' },
     { kind: 'center', text: `${tx.order} #${o.id}`, size: 34, bold: true },
     { kind: 'center', text: when, size: 20 },
@@ -202,7 +209,7 @@ export function receiptFor(o: MerchantOrder, store: MerchantStore, tx: MerchantT
 export function testReceipt(store: MerchantStore | null, tx: MerchantTxt, lang: string, locale: string): ReceiptLine[] {
   return [
     { kind: 'title', text: lang === 'ar' || lang === 'ku' ? 'كاب' : 'KAP' },
-    ...(store ? [{ kind: 'center', text: lang === 'ar' || lang === 'ku' ? store.name_ar : store.name, size: 24, bold: true } as ReceiptLine] : []),
+    ...(store ? [{ kind: 'center', text: storeLabel(store, lang), size: 24, bold: true } as ReceiptLine] : []),
     { kind: 'rule' },
     { kind: 'center', text: tx.testTitle, size: 30, bold: true },
     { kind: 'text', text: tx.testBody, size: 22 },
