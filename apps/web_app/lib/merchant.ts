@@ -94,6 +94,9 @@ const AR = {
   tooLate: 'لم يعد بالإمكان رفض هذا الطلب.',
   offline: 'لا يوجد اتصال. ستظهر الطلبات عند عودة الإنترنت.',
   updated: 'آخر تحديث',
+  builtIn: 'طابعة الجهاز المدمجة جاهزة. الطباعة مباشرة بدون أي نافذة.',
+  printFailed: 'لم تتم الطباعة. تأكد أن في الطابعة ورقًا ثم اضغط طباعة مرة أخرى.',
+  getApp: 'للطباعة المباشرة على طابعة الجهاز: ثبّت تطبيق كاب للمتاجر',
 };
 
 const EN: typeof AR = {
@@ -163,6 +166,9 @@ const EN: typeof AR = {
   tooLate: 'This order can no longer be rejected.',
   offline: "You're offline. Orders will appear when the connection returns.",
   updated: 'Updated',
+  builtIn: 'Built-in printer ready. Receipts print straight away, no dialogs.',
+  printFailed: "Didn't print. Check there is paper, then press Print again.",
+  getApp: 'Print straight to this terminal: install the KAP Store app',
 };
 
 export function merchantTxt(lang: string) {

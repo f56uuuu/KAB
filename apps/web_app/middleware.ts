@@ -64,5 +64,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // everything except static assets, Next internals and the map API route
-  matcher: ['/((?!_next/|api/|favicon|icon|apple-icon|manifest|sw.js|icon-512.png|\\.well-known/|robots.txt|sitemap.xml|.*\\.(?:png|jpg|svg|webp|ico)$).*)'],
+  matcher: ['/((?!_next/|api/|favicon|icon|apple-icon|manifest|sw.js|icon-512.png|\\.well-known/|robots.txt|sitemap.xml|.*\\.(?:png|jpg|svg|webp|ico|apk)$).*)'],
 };

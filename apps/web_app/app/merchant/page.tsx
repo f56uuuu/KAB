@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BellRing, Check, Printer, Settings2, Store as StoreIcon, Volume2, VolumeX, WifiOff, X } from 'lucide-react';
+import { BellRing, Check, Download, Printer, Settings2, Store as StoreIcon, Volume2, VolumeX, WifiOff, X } from 'lucide-react';
 import { KMark } from '@/components/Logo';
 import { Button, Spinner, Switch, inputCls, useToast } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { sb, useStickyState } from '@/lib/hooks';
 import { money, timeAgo } from '@/lib/format';
 import { itemName, merchantTxt, storeLabel, receiptFor, testReceipt, type MerchantOrder, type MerchantStore } from '@/lib/merchant';
-import { printReceipt, type PaperWidth, type PrintMethod } from '@/lib/receipt';
+import { nativePrinter, printReceipt, type PaperWidth, type PrintMethod } from '@/lib/receipt';
 
 type Settings = { width: PaperWidth; method: PrintMethod; autoPrint: boolean; copies: number; sound: boolean };
 const DEFAULTS: Settings = { width: 58, method: 'rawbt', autoPrint: true, copies: 1, sound: true };
@@ -37,6 +37,12 @@ export default function MerchantPage() {
   const [busy, setBusy] = useState<number | null>(null);
   const [rejecting, setRejecting] = useState<MerchantOrder | null>(null);
   const [online, setOnline] = useState(true);
+  const [native, setNative] = useState(false);
+  const [android, setAndroid] = useState(false);
+  useEffect(() => {
+    setNative(!!nativePrinter());
+    setAndroid(/android/i.test(navigator.userAgent));
+  }, []);
   const [, tick] = useState(0);
 
   useEffect(() => setSettingsState(readSettings()), []);
@@ -112,6 +118,29 @@ export default function MerchantPage() {
     setStarted(true);
   }
   useEffect(() => {
+    if (!native || started) return;
+    start();
+    const unlock = () => audio.current?.resume();
+    window.addEventListener('pointerdown', unlock);
+    return () => window.removeEventListener('pointerdown', unlock);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [native]);
+  const report = useCallback(async (extra?: Record<string, unknown>) => {
+    const p = nativePrinter();
+    if (!p) return;
+    let info: Record<string, unknown> = {};
+    try {
+      info = JSON.parse(p.info());
+    } catch {
+      /* old app */
+    }
+    await sb().rpc('merchant_device_report', { p_info: { ...info, ...extra } });
+  }, []);
+  useEffect(() => {
+    if (native && store) report();
+  }, [native, store, report]);
+
+  useEffect(() => {
     const again = async () => {
       if (started && document.visibilityState === 'visible') {
         try {
@@ -162,9 +191,16 @@ export default function MerchantPage() {
   }, [newOrders, orders]);
 
   // ---------- actions ----------
+  async function runPrint(lines: Parameters<typeof printReceipt>[0], copies: number) {
+    const r = await printReceipt(lines, { width: settings.width, method: settings.method, dir, copies });
+    if (nativePrinter()) {
+      if (r.startsWith('error')) toast(tx.printFailed);
+      report({ last_print: r, last_print_at: new Date().toISOString() });
+    }
+  }
   async function print(o: MerchantOrder) {
     if (!store) return;
-    await printReceipt(receiptFor(o, store, tx, lang, locale), { width: settings.width, method: settings.method, dir, copies: settings.copies });
+    await runPrint(receiptFor(o, store, tx, lang, locale), settings.copies);
   }
   async function act(o: MerchantOrder, action: 'accept' | 'reject' | 'ready', reason?: string) {
     setBusy(o.id);
@@ -266,6 +302,13 @@ export default function MerchantPage() {
         </nav>
       </header>
 
+      {!native && android && (
+        <a href="/kap-store.apk" className="bg-accent text-ink text-sm font-semibold px-4 py-3 flex items-center gap-3 justify-center">
+          <Download className="w-5 h-5 shrink-0" />
+          {tx.getApp}
+        </a>
+      )}
+
       {!online && (
         <p role="status" className="bg-danger text-white text-sm px-4 py-2 flex items-center gap-2 justify-center">
           <WifiOff className="w-4 h-4" />
@@ -302,7 +345,7 @@ export default function MerchantPage() {
         )}
       </section>
 
-      {!started && (
+      {!started && !native && (
         <div className="fixed inset-0 z-50 bg-ink/95 text-white flex flex-col items-center justify-center gap-5 p-8 text-center">
           <KMark size={72} className="rounded-2xl" />
           <p className="text-2xl font-semibold">{store ? storeLabel(store, lang) : tx.title}</p>
@@ -338,6 +381,12 @@ export default function MerchantPage() {
       {showSettings && (
         <Sheet title={tx.settings} onClose={() => setShowSettings(false)} dir={dir} closeLabel={tx.close}>
           <div className="flex flex-col gap-5">
+            {native ? (
+              <p className="rounded-2xl bg-success/10 text-success font-semibold px-4 py-3 flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                {tx.builtIn}
+              </p>
+            ) : (
             <div>
               <p className="text-sm font-semibold mb-2">{tx.method}</p>
               <div className="flex flex-col gap-2">
@@ -364,6 +413,7 @@ export default function MerchantPage() {
                 ))}
               </div>
             </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-semibold mb-2">{tx.paper}</p>
@@ -397,7 +447,7 @@ export default function MerchantPage() {
             <Button
               variant="dark"
               full
-              onClick={() => printReceipt(testReceipt(store, tx, lang, locale), { width: settings.width, method: settings.method, dir, copies: 1 })}
+              onClick={() => runPrint(testReceipt(store, tx, lang, locale), 1)}
             >
               <Printer className="w-5 h-5" />
               {tx.test}

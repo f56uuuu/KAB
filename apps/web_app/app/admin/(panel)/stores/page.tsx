@@ -324,6 +324,12 @@ function DeviceLink({ store, toast }: { store: any; toast: (m: string) => void }
                 <span className="flex-1 min-w-0">
                   <span className="block font-semibold truncate">{m.label || m.phone || m.user_id.slice(0, 8)}</span>
                   <span className="block text-xs text-muted">{new Date(m.created_at).toLocaleString(locale)}</span>
+                  {m.device && (
+                    <span className="block text-xs text-muted truncate" dir="ltr">
+                      {m.device}
+                      {m.last_print ? ` · ${m.last_print}` : ''}
+                    </span>
+                  )}
                 </span>
                 <Button size="sm" variant="danger" onClick={() => unlink(m.user_id)}>
                   {tx.remove}

@@ -211,16 +211,35 @@ export function printWithSystem(canvas: HTMLCanvasElement, width: PaperWidth) {
   else img.onload = go;
 }
 
-export async function printReceipt(lines: ReceiptLine[], o: { width: PaperWidth; method: PrintMethod; dir: 'rtl' | 'ltr'; copies?: number }) {
+type NativePrinter = { print: (b64: string) => string; info: () => string; version: () => string };
+
+/** The KAP store app (Android) exposes the terminal's own printer to the page. */
+export function nativePrinter(): NativePrinter | null {
+  if (typeof window === 'undefined') return null;
+  const p = (window as any).KapPrinter;
+  return p && typeof p.print === 'function' ? (p as NativePrinter) : null;
+}
+
+/** Prints and reports how: 'ok:<way>' or 'error:<reason>'. */
+export async function printReceipt(lines: ReceiptLine[], o: { width: PaperWidth; method: PrintMethod; dir: 'rtl' | 'ltr'; copies?: number }): Promise<string> {
   const canvas = await renderReceipt(lines, { width: o.width, dir: o.dir });
-  if (o.method === 'system') {
-    printWithSystem(canvas, o.width);
-    return canvas;
-  }
   const one = escposFromCanvas(canvas);
   const n = Math.max(1, Math.min(3, o.copies ?? 1));
   const all = new Uint8Array(one.length * n);
   for (let i = 0; i < n; i++) all.set(one, i * one.length);
+
+  const native = nativePrinter();
+  if (native) {
+    try {
+      return String(native.print(toBase64(all)));
+    } catch (e) {
+      return 'error:' + String(e);
+    }
+  }
+  if (o.method === 'system') {
+    printWithSystem(canvas, o.width);
+    return 'ok:system';
+  }
   printWithRawBT(all);
-  return canvas;
+  return 'ok:rawbt';
 }
