@@ -1,41 +1,177 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { Bell, Briefcase, ChevronDown, ChevronLeft, Gift, House, MapPin, Package, Search, ShoppingBag, UtensilsCrossed } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, Bell, Car, ChevronLeft, Headphones, Map as MapIcon, Menu, Search, Store as StoreIcon, UserRound, X } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
-import { KMark } from '@/components/Logo';
-import { useI18n } from '@/lib/i18n';
-import { currentUser, sb, useFlags, useStickyState, useUnreadCount } from '@/lib/hooks';
-import { useMyLocation } from '@/lib/location';
-import { ACTIVE, jobHref, type JobKind } from '@/lib/jobs';
+import { ServiceArt, type ArtKind } from '@/components/ServiceArt';
 import { StoreMeta } from '@/components/StoreMeta';
 import { Tour } from '@/components/Tour';
-import { places as placeStore, type SavedPlace } from '@/lib/offline';
+import { useToast } from '@/components/ui';
+import { isOn } from '@/lib/features';
+import { currentUser, sb, useFlags, useProfile, useStickyState, useUnreadCount } from '@/lib/hooks';
+import { useI18n } from '@/lib/i18n';
+import { ACTIVE, jobHref, type JobKind } from '@/lib/jobs';
+import { useMyLocation } from '@/lib/location';
 
 type ActiveJob = { kind: JobKind; id: number; status: string; title: string };
 
+const TX = {
+  ar: {
+    hello: 'مرحبًا بك',
+    helloName: 'مرحبًا بك، {n}',
+    title: 'ماذا تحتاج اليوم؟',
+    search: 'ابحث عن مطعم أو متجر أو منتج…',
+    taxi: 'تكسي',
+    delivery: 'توصيل',
+    food: 'مطاعم',
+    market: 'متاجر',
+    pharmacy: 'صيدليات',
+    gifts: 'هدايا وورود',
+    homeSvc: 'خدمات منزلية',
+    carSvc: 'خدمات السيارات',
+    soon: 'قريبًا',
+    soonToast: 'هذه الخدمة قادمة قريبًا إلى مدينتك.',
+    slides: {
+      RIDE: ['اطلب تكسي الآن', 'بسرعة وأمان إلى أي مكان'],
+      FOOD: ['جائع؟ اطلب من مطعمك المفضل', 'توصيل سريع من مطاعم مدينتك'],
+      DELIVERY: ['أرسل أي غرض', 'من الباب إلى الباب بأمان'],
+      MARKET: ['تسوّق من المتاجر القريبة', 'بقالة وصيدليات وورود'],
+    } as Record<string, [string, string]>,
+    open: 'افتح',
+    offersTitle: 'عروض حصرية',
+    offersSub: 'خصومات على خدماتك المفضلة',
+    menu: 'القائمة',
+    mAccount: 'حسابي',
+    mMap: 'خرائطي والتوجيه',
+    mDrive: 'اعمل كابتن مع كاب',
+    mStore: 'شاشة المطعم أو المتجر',
+    mSupport: 'المساعدة والدعم',
+    close: 'إغلاق',
+    notif: 'الإشعارات',
+  },
+  en: {
+    hello: 'Welcome',
+    helloName: 'Welcome, {n}',
+    title: 'What do you need today?',
+    search: 'Search restaurants, stores or products…',
+    taxi: 'Taxi',
+    delivery: 'Delivery',
+    food: 'Restaurants',
+    market: 'Stores',
+    pharmacy: 'Pharmacies',
+    gifts: 'Gifts & flowers',
+    homeSvc: 'Home services',
+    carSvc: 'Car services',
+    soon: 'Soon',
+    soonToast: 'This service is coming to your city soon.',
+    slides: {
+      RIDE: ['Get a taxi now', 'Fast and safe, anywhere'],
+      FOOD: ['Hungry? Order from your favourite place', 'Fast delivery from restaurants near you'],
+      DELIVERY: ['Send anything', 'Door to door, safely'],
+      MARKET: ['Shop from stores nearby', 'Groceries, pharmacies and flowers'],
+    } as Record<string, [string, string]>,
+    open: 'Open',
+    offersTitle: 'Exclusive offers',
+    offersSub: 'Discounts on the services you love',
+    menu: 'Menu',
+    mAccount: 'My account',
+    mMap: 'My map & directions',
+    mDrive: 'Drive with KAP',
+    mStore: 'Store screen',
+    mSupport: 'Help & support',
+    close: 'Close',
+    notif: 'Notifications',
+  },
+  ku: {
+    hello: 'بەخێربێیت',
+    helloName: 'بەخێربێیت، {n}',
+    title: 'ئەمڕۆ چیت پێویستە؟',
+    search: 'بەدوای چێشتخانە، دوکان یان بەرهەم بگەڕێ…',
+    taxi: 'تاکسی',
+    delivery: 'گەیاندن',
+    food: 'چێشتخانەکان',
+    market: 'دوکانەکان',
+    pharmacy: 'دەرمانخانەکان',
+    gifts: 'دیاری و گوڵ',
+    homeSvc: 'خزمەتگوزاری ماڵ',
+    carSvc: 'خزمەتگوزاری ئۆتۆمبێل',
+    soon: 'بەم زووانە',
+    soonToast: 'ئەم خزمەتگوزارییە بەم زووانە دێتە شارەکەت.',
+    slides: {
+      RIDE: ['ئێستا تاکسی داوا بکە', 'بە خێرایی و سەلامەتی بۆ هەر شوێنێک'],
+      FOOD: ['برسیتە؟ لە چێشتخانەی دڵخوازت داوا بکە', 'گەیاندنی خێرا لە چێشتخانەکانی شارەکەت'],
+      DELIVERY: ['هەر شتێک بنێرە', 'لە دەرگاوە بۆ دەرگا بە سەلامەتی'],
+      MARKET: ['لە دوکانە نزیکەکان بکڕە', 'بەقاڵی، دەرمانخانە و گوڵ'],
+    } as Record<string, [string, string]>,
+    open: 'بیکەرەوە',
+    offersTitle: 'ئۆفەری تایبەت',
+    offersSub: 'داشکاندن لەسەر خزمەتگوزارییە دڵخوازەکانت',
+    menu: 'لیست',
+    mAccount: 'هەژمارەکەم',
+    mMap: 'نەخشەکەم و ڕێنمایی',
+    mDrive: 'لەگەڵ کاب ببە کاپتن',
+    mStore: 'شاشەی چێشتخانە',
+    mSupport: 'یارمەتی و پشتگیری',
+    close: 'داخستن',
+    notif: 'ئاگادارکردنەوەکان',
+  },
+  tr: {
+    hello: 'Hoş geldin',
+    helloName: 'Hoş geldin, {n}',
+    title: 'Bugün neye ihtiyacın var?',
+    search: 'Restoran, mağaza veya ürün ara…',
+    taxi: 'Taksi',
+    delivery: 'Kurye',
+    food: 'Restoranlar',
+    market: 'Mağazalar',
+    pharmacy: 'Eczaneler',
+    gifts: 'Hediye ve çiçek',
+    homeSvc: 'Ev hizmetleri',
+    carSvc: 'Araç hizmetleri',
+    soon: 'Yakında',
+    soonToast: 'Bu hizmet yakında şehrinde.',
+    slides: {
+      RIDE: ['Hemen taksi çağır', 'Hızlı ve güvenli, her yere'],
+      FOOD: ['Acıktın mı? Sevdiğin yerden sipariş ver', 'Yakındaki restoranlardan hızlı teslimat'],
+      DELIVERY: ['İstediğini gönder', 'Kapıdan kapıya, güvenle'],
+      MARKET: ['Yakındaki mağazalardan alışveriş', 'Market, eczane ve çiçek'],
+    } as Record<string, [string, string]>,
+    open: 'Aç',
+    offersTitle: 'Özel fırsatlar',
+    offersSub: 'Sevdiğin hizmetlerde indirimler',
+    menu: 'Menü',
+    mAccount: 'Hesabım',
+    mMap: 'Haritam ve yol tarifi',
+    mDrive: "KAP'ta kaptan ol",
+    mStore: 'Mağaza ekranı',
+    mSupport: 'Yardım ve destek',
+    close: 'Kapat',
+    notif: 'Bildirimler',
+  },
+};
+
+type Tile = { key: string; flag: string; parent?: string; href?: string; art: ArtKind; label: string; soon?: boolean };
+type Slide = { id: string; title: string; sub: string; href: string; art: ArtKind };
+
 export default function HomePage() {
-  const { t, pick } = useI18n();
+  const { t, pick, lang, dir } = useI18n();
+  const tx = TX[(lang as keyof typeof TX) in TX ? (lang as keyof typeof TX) : 'en'];
   const flags = useFlags();
+  const on = (k: string) => isOn(flags, k);
   const unread = useUnreadCount();
+  const profile = useProfile();
   const loc = useMyLocation();
+  const { toast, toastNode } = useToast();
   const [banners, setBanners] = useStickyState<any[]>('home.banners', []);
-  const [coupons, setCoupons] = useStickyState<any[]>('home.coupons', []);
   const [stores, setStores] = useStickyState<any[]>('home.stores', []);
   const [currency, setCurrency] = useStickyState('home.currency', 'IQD');
   const [active, setActive] = useStickyState<ActiveJob[]>('home.active', []);
-  const [copied, setCopied] = useState<string | null>(null);
-  const [hour, setHour] = useState(12);
-  useEffect(() => setHour(new Date().getHours()), []);
-  const [myPlaces, setMyPlaces] = useState<SavedPlace[]>([]);
-  useEffect(() => setMyPlaces(placeStore.all().filter((p) => p.kind !== 'fav')), []);
+  const [menu, setMenu] = useState(false);
 
   useEffect(() => {
     const s = sb();
     s.from('banners').select('*').eq('is_active', true).order('sort').then(({ data }) => setBanners(data ?? []));
-    s.from('coupons').select('code,discount_type,discount_value,service_type').eq('is_active', true).then(({ data }) => setCoupons(data ?? []));
     (async () => {
       const user = await currentUser();
       if (!user) return;
@@ -60,119 +196,82 @@ export default function HomePage() {
       const { data: city } = await s.rpc('nearest_city', { p_lat: loc.point.lat, p_lng: loc.point.lng }).maybeSingle();
       if (!city) return;
       const [{ data: st }, { data: co }] = await Promise.all([
-        s.from('stores').select('*').eq('city_id', (city as any).id).eq('is_active', true).order('rating', { ascending: false }).limit(10),
+        s.from('stores').select('*').eq('city_id', (city as any).id).eq('is_active', true).in('category', ['restaurant', 'cafe', 'sweets']).order('rating', { ascending: false }).limit(6),
         s.from('countries').select('currency_code').eq('id', (city as any).country_id).single(),
       ]);
       setStores(st ?? []);
       if (co) setCurrency((co as any).currency_code);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loc.ready, loc.point.lat, loc.point.lng]);
 
-  // promo badges come from live coupons
-  const badge = useMemo(() => {
-    const best = (svc: string[]) =>
-      coupons.filter((c) => svc.includes(c.service_type) && c.discount_type === 'PERCENT').reduce((m, c) => Math.max(m, Number(c.discount_value)), 0);
-    const freeDel = coupons.some((c) => c.discount_type === 'FREE_DELIVERY');
-    return {
-      RIDE: best(['RIDE', 'ALL']) ? t('home.badge.off', { n: best(['RIDE', 'ALL']) }) : null,
-      FOOD: freeDel ? t('home.badge.free_delivery') : best(['FOOD', 'ALL']) ? t('home.badge.off', { n: best(['FOOD', 'ALL']) }) : null,
-      DELIVERY: best(['DELIVERY']) ? t('home.badge.off', { n: best(['DELIVERY']) }) : null,
-      MARKET: freeDel ? t('home.badge.free_delivery') : null,
-    } as Record<string, string | null>;
-  }, [coupons, t]);
+  // every service the super admin has switched on, in a fixed order
+  const tiles = useMemo(() => {
+    const all: Tile[] = [
+      { key: 'taxi', flag: 'RIDE', href: '/ride/new', art: 'taxi', label: tx.taxi },
+      { key: 'delivery', flag: 'DELIVERY', href: '/send', art: 'scooter', label: tx.delivery },
+      { key: 'food', flag: 'FOOD', href: '/food', art: 'burger', label: tx.food },
+      { key: 'market', flag: 'MARKET', href: '/food?type=market', art: 'bags', label: tx.market },
+      { key: 'pharmacy', flag: 'PHARMACY', parent: 'MARKET', href: '/food?type=market&cat=pharmacy', art: 'pharmacy', label: tx.pharmacy },
+      { key: 'gifts', flag: 'GIFTS', parent: 'MARKET', href: '/food?type=market&cat=flowers', art: 'gift', label: tx.gifts },
+      { key: 'home', flag: 'HOME_SERVICES', art: 'home', label: tx.homeSvc, soon: true },
+      { key: 'car', flag: 'CAR_SERVICES', art: 'car', label: tx.carSvc, soon: true },
+    ];
+    return all.filter((x) => on(x.flag) && (!x.parent || on(x.parent)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flags, lang]);
 
-  const small: { key: string; href: string; title: string; Icon: LucideIcon }[] = [
-    { key: 'FOOD', href: '/food', title: t('home.svc.food'), Icon: UtensilsCrossed },
-    { key: 'DELIVERY', href: '/send', title: t('home.svc.send'), Icon: Package },
-    { key: 'MARKET', href: '/food?type=market', title: t('home.svc.market'), Icon: ShoppingBag },
-    { key: 'OFFERS', href: '/offers', title: t('nav.offers'), Icon: Gift },
-  ].filter((s) => !flags || flags[s.key] !== false);
-  const rideOn = !flags || flags.RIDE !== false;
+  const slides = useMemo(() => {
+    const svc: Slide[] = (
+      [
+        ['RIDE', '/ride/new', 'taxi'],
+        ['FOOD', '/food', 'burger'],
+        ['DELIVERY', '/send', 'scooter'],
+        ['MARKET', '/food?type=market', 'bags'],
+      ] as const
+    )
+      .filter(([k]) => on(k))
+      .map(([k, href, art]) => ({ id: k, title: tx.slides[k][0], sub: tx.slides[k][1], href, art }));
+    const promo: Slide[] = on('OFFERS')
+      ? banners.map((b) => ({ id: `b${b.id}`, title: pick(b.title_ar, b.title), sub: pick(b.description_ar, b.description) ?? '', href: b.link || '/offers', art: 'gift' as ArtKind }))
+      : [];
+    return [...svc, ...promo];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flags, lang, banners]);
 
-  const tickets = coupons.slice(0, 2).map((c) => ({
-    code: c.code as string,
-    big:
-      c.discount_type === 'FREE_DELIVERY'
-        ? t('home.badge.free_delivery')
-        : c.discount_type === 'PERCENT'
-          ? t('home.badge.off', { n: Number(c.discount_value) })
-          : t('offers.title'),
-    sub: t(`offers.service.${c.service_type || 'ALL'}` as any),
-  }));
-
-  function copy(code: string) {
-    navigator.clipboard?.writeText(code).catch(() => {});
-    setCopied(code);
-    setTimeout(() => setCopied((x) => (x === code ? null : x)), 1600);
-  }
-
-  const greet = hour >= 4 && hour < 12 ? t('home.morning') : t('home.evening');
+  const name = (profile?.first_name || profile?.full_name || '').split(' ')[0];
 
   return (
     <main className="min-h-screen bg-background pb-28">
-      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto">
-        {/* greeting + location + notifications */}
-        <header className="px-5 safe-top pt-3 flex items-center gap-3">
-          <KMark size={46} className="rounded-full" />
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] text-muted">{greet}</p>
-            <Link href="/ride/new" className="flex items-center gap-1 text-[15px] font-semibold min-h-[28px]">
-              <MapPin className="w-4 h-4 shrink-0" />
-              <span className="truncate">{loc.ready ? loc.address ?? t('home.current_location') : t('map.locating')}</span>
-              <ChevronDown className="w-4 h-4 shrink-0 text-muted" />
-            </Link>
-          </div>
-          <Link
-            href="/notifications"
-            aria-label={t('notif.title')}
-            className="relative w-[46px] h-[46px] rounded-full border-[1.5px] border-border flex items-center justify-center shrink-0"
-          >
-            <Bell className="w-5 h-5" />
-            {unread > 0 && (
-              <span className="absolute -top-0.5 -end-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">
-                {unread > 9 ? '9+' : unread}
-              </span>
-            )}
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-5">
+        {/* top bar */}
+        <header className="safe-top pt-2 grid grid-cols-[48px_1fr_48px] items-center">
+          <Link href="/notifications" aria-label={tx.notif} className="relative w-12 h-12 rounded-full bg-surface flex items-center justify-center">
+            <Bell className="w-[22px] h-[22px]" />
+            {unread > 0 && <span className="absolute top-2.5 end-3 w-2.5 h-2.5 rounded-full bg-accent ring-2 ring-surface" />}
           </Link>
+          <p className="text-center text-[28px] font-bold tracking-tight leading-none" dir="ltr" aria-label="KAP">
+            K<span className="text-accent">A</span>P
+          </p>
+          <button onClick={() => setMenu(true)} aria-label={tx.menu} className="w-12 h-12 rounded-full bg-surface flex items-center justify-center justify-self-end">
+            <Menu className="w-[22px] h-[22px]" />
+          </button>
         </header>
 
-        {/* where to */}
-        {rideOn && (
-          <section className="px-5 mt-6">
-            <div className="rounded-[30px] bg-ink dark:bg-raised text-white p-5 flex flex-col gap-3.5">
-              <h1 className="text-[22px] font-semibold leading-snug">{t('home.where_long')}</h1>
-              <Link href="/ride/new" data-tour="where" className="h-14 rounded-[18px] bg-white/10 text-white/60 flex items-center gap-3 px-4 text-[15px]">
-                <span className="w-[30px] h-[30px] rounded-full bg-accent flex items-center justify-center shrink-0">
-                  <Search className="w-4 h-4 text-ink" strokeWidth={2.6} />
-                </span>
-                <span className="truncate">{t('home.search_place')}</span>
-              </Link>
-              <div className="flex gap-2">
-                {(['home', 'work'] as const).map((k) => {
-                  const saved = myPlaces.some((x) => x.kind === k);
-                  const Icon = k === 'home' ? House : Briefcase;
-                  return (
-                    <Link
-                      key={k}
-                      href={saved ? `/map?go=${k}` : '/map'}
-                      className="flex-1 min-w-0 min-h-[52px] rounded-2xl border-[1.5px] border-white/15 flex items-center gap-2.5 px-3"
-                    >
-                      <Icon className="w-5 h-5 text-accent shrink-0" />
-                      <span className="flex flex-col min-w-0">
-                        <span className="text-sm font-medium truncate">{t(k === 'home' ? 'home.saved_home' : 'home.saved_work')}</span>
-                        <span className="text-[11px] text-white/60 truncate">{saved ? t('home.tap_go') : t('home.add_place')}</span>
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        )}
+        {/* greeting */}
+        <section className="mt-6">
+          <p className="text-muted">{name ? tx.helloName.replace('{n}', name) : tx.hello}</p>
+          <h1 className="text-[28px] font-bold leading-snug mt-0.5">{tx.title}</h1>
+        </section>
 
-        {/* active jobs */}
+        <Link href="/food" className="mt-4 h-14 rounded-2xl bg-surface border border-border flex items-center gap-3 px-4 text-muted">
+          <Search className="w-5 h-5 shrink-0" />
+          <span className="truncate">{tx.search}</span>
+        </Link>
+
+        {/* what is in progress right now */}
         {active.length > 0 && (
-          <section className="px-5 mt-4 flex flex-col gap-2">
+          <section className="mt-4 flex flex-col gap-2">
             {active.map((j) => (
               <Link key={`${j.kind}${j.id}`} href={jobHref(j.kind, j.id)} className="rounded-[22px] bg-accent text-ink p-4 flex items-center gap-3">
                 <span className="relative flex h-3 w-3">
@@ -192,132 +291,66 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* services */}
-        <section data-tour="services" className="px-5 mt-7">
-          <h2 className="text-lg font-semibold mb-3">{t('home.need_today')}</h2>
-          <div className={`grid grid-cols-2 gap-2.5 ${rideOn ? 'grid-rows-[120px_120px] auto-rows-[96px]' : 'auto-rows-[120px]'}`}>
-            {rideOn && (
-              <Link href="/ride/new" className="row-span-2 relative rounded-[26px] bg-accent text-ink p-[18px] flex flex-col justify-between overflow-hidden active:scale-[.98] transition-transform">
-                <span className="flex flex-col gap-1">
-                  <span className="text-[22px] font-semibold">{t('home.svc.ride')}</span>
-                  <span className="text-[13px] leading-relaxed text-ink/75">{t('home.ride_sub2')}</span>
-                </span>
-                {badge.RIDE && <span className="self-start text-[11px] font-semibold bg-ink text-accent rounded-full px-2.5 py-1">{badge.RIDE}</span>}
-                <svg aria-hidden width="130" height="80" viewBox="0 0 130 80" className="self-start rtl:-scale-x-100">
-                  <path d="M8 58h114" stroke="#0D0D0F" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 10" />
-                  <path d="M18 50l10-22a8 8 0 0 1 7-5h46a8 8 0 0 1 7 4l13 23h8a6 6 0 0 1 6 6v6H12v-6a6 6 0 0 1 6-6Z" fill="#0D0D0F" />
-                  <path d="M36 30h20v16H29ZM62 30h18l8 16H62Z" fill="#FFD100" />
-                  <circle cx="36" cy="62" r="9" fill="#FFD100" stroke="#0D0D0F" strokeWidth="5" />
-                  <circle cx="96" cy="62" r="9" fill="#FFD100" stroke="#0D0D0F" strokeWidth="5" />
-                </svg>
-              </Link>
-            )}
-            {small.map(({ key, href, title, Icon }, i) => {
-              const row = rideOn && i >= 2;
-              return (
-                <Link
-                  key={key}
-                  href={href}
-                  className={`rounded-[22px] bg-surface p-3.5 flex active:scale-[.98] transition-transform ${
-                    row ? 'items-center gap-3' : 'flex-col justify-between'
-                  }`}
-                >
-                  <Icon className={row ? 'w-7 h-7' : 'w-[30px] h-[30px]'} strokeWidth={1.8} />
-                  <span className="flex items-center justify-between gap-1.5 min-w-0">
-                    <span className="text-base font-semibold truncate">{title}</span>
-                    {!row && badge[key] && (
-                      <span className="text-[10px] font-semibold bg-ink text-accent dark:bg-accent dark:text-ink rounded-full px-2 py-0.5 whitespace-nowrap">{badge[key]}</span>
-                    )}
-                  </span>
+        {on('HOME_HERO') && slides.length > 0 && <Hero slides={slides} dir={dir} openLabel={tx.open} />}
+
+        {/* all services */}
+        {tiles.length > 0 && (
+          <section data-tour="services" className="mt-5 grid grid-cols-6 gap-3">
+            {tiles.map((x, i) => {
+              const rest = tiles.length % 3;
+              const wide = rest !== 0 && i >= tiles.length - rest; // last row fills the width
+              const span = wide ? (rest === 1 ? 'col-span-6' : 'col-span-3') : 'col-span-2';
+              const body = (
+                <>
+                  {x.soon && <span className="absolute top-2 start-2 text-[10px] font-semibold rounded-full px-2 py-0.5 bg-accent text-ink">{tx.soon}</span>}
+                  <ServiceArt kind={x.art} uid={`tile-${x.key}`} className={`h-[68px] w-auto ${x.soon ? 'opacity-80' : ''}`} />
+                  <span className="text-[15px] font-semibold text-center leading-tight">{x.label}</span>
+                </>
+              );
+              const cls = `${span} relative min-h-[132px] rounded-[22px] bg-surface border border-border flex flex-col items-center justify-center gap-2 px-2 py-3 active:scale-[.97] transition-transform`;
+              return x.href ? (
+                <Link key={x.key} href={x.href} data-tour={x.key === 'taxi' ? 'where' : undefined} className={cls}>
+                  {body}
                 </Link>
+              ) : (
+                <button key={x.key} onClick={() => toast(tx.soonToast)} className={cls}>
+                  {body}
+                </button>
               );
             })}
-          </div>
-        </section>
-
-        {/* offers as tickets */}
-        {flags?.OFFERS !== false && tickets.length > 0 && (
-          <section className="px-5 mt-7">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">{t('home.offers_today')}</h2>
-              <Link href="/offers" className="text-[13px] text-muted min-h-[44px] flex items-center">
-                {t('home.see_all')}
-              </Link>
-            </div>
-            <div className="flex flex-col gap-2.5">
-              {tickets.map((k, i) => {
-                const dark = i === 0;
-                return (
-                  <div
-                    key={k.code}
-                    className={`relative rounded-[22px] flex items-stretch overflow-hidden ${dark ? 'bg-ink dark:bg-raised text-white' : 'bg-surface'}`}
-                  >
-                    <span className="flex-1 min-w-0 px-5 py-4 flex flex-col justify-center gap-0.5">
-                      <span className={`text-xs truncate ${dark ? 'text-white/60' : 'text-muted'}`}>{k.sub}</span>
-                      <span className={`text-[26px] font-bold leading-tight ${dark ? 'text-accent' : ''}`}>{k.big}</span>
-                    </span>
-                    <span className={`relative w-[128px] shrink-0 border-s-[1.5px] border-dashed flex flex-col items-center justify-center gap-2 py-4 ${dark ? 'border-white/20' : 'border-border'}`}>
-                      <span aria-hidden className="absolute -top-[11px] -start-[11px] w-[22px] h-[22px] rounded-full bg-background" />
-                      <span aria-hidden className="absolute -bottom-[11px] -start-[11px] w-[22px] h-[22px] rounded-full bg-background" />
-                      <bdi dir="ltr" className="text-[13px] font-semibold tracking-wider max-w-[110px] truncate">
-                        {k.code}
-                      </bdi>
-                      <button
-                        type="button"
-                        onClick={() => copy(k.code)}
-                        className={`min-h-[34px] rounded-full px-3 text-xs font-semibold ${dark ? 'bg-accent text-ink' : 'bg-ink text-white dark:bg-white dark:text-ink'}`}
-                      >
-                        {copied === k.code ? t('common.copied') : t('home.use')}
-                      </button>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
           </section>
         )}
 
-        {/* personal map + captain */}
-        <section className="px-5 mt-7 grid grid-cols-2 gap-2.5">
-          <Link href="/map" data-tour="mymap" className="rounded-[22px] bg-surface p-4 flex flex-col gap-2 min-h-[112px]">
-            <MapPin className="w-7 h-7" strokeWidth={1.8} />
-            <span className="font-semibold">{t('home.mymap')}</span>
-            <span className="text-xs text-muted leading-relaxed">{t('home.mymap_sub')}</span>
-          </Link>
-          <Link href="/driver" data-tour="drive" className="rounded-[22px] bg-ink dark:bg-raised text-white p-4 flex flex-col gap-2 min-h-[112px]">
-            <span className="w-7 h-7 rounded-full bg-accent text-ink flex items-center justify-center">
-              <ChevronLeft className="w-4 h-4 ltr:rotate-180" strokeWidth={2.6} />
+        {on('OFFERS') && (
+          <Link href="/offers" className="mt-5 relative min-h-[108px] rounded-[24px] overflow-hidden flex items-center ps-5 pe-3 py-3 gap-3" style={{ background: goldBg(dir) }}>
+            <span className="flex-1 min-w-0">
+              <span className="block text-lg font-bold text-accent leading-snug">{tx.offersTitle}</span>
+              <span className="block text-[13px] text-white/80 mt-1 leading-relaxed">{tx.offersSub}</span>
             </span>
-            <span className="font-semibold">{t('home.drive_title')}</span>
-            <span className="text-xs text-white/60 leading-relaxed">{t('home.drive_big')}</span>
+            <span className="w-11 h-11 rounded-full bg-accent text-ink flex items-center justify-center shrink-0">
+              <ArrowLeft className="w-5 h-5 ltr:rotate-180" />
+            </span>
+            <ServiceArt kind="gift" uid="offer" className="w-[96px] h-auto shrink-0" />
           </Link>
-        </section>
+        )}
 
-        {/* nearby restaurants */}
-        {flags?.FOOD !== false && stores.length > 0 && (
-          <section className="px-5 mt-7">
+        {on('HOME_STORES') && on('FOOD') && stores.length > 0 && (
+          <section className="mt-7">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-semibold">{t('home.nearby')}</h2>
               <Link href="/food" className="text-[13px] text-muted min-h-[44px] flex items-center">
                 {t('home.see_all')}
               </Link>
             </div>
-            <div className="flex flex-col gap-3.5">
-              {stores.slice(0, 5).map((s, i) => {
-                const name = pick(s.name_ar, s.name) || '';
-                const tone = ['bg-ink text-accent dark:bg-raised', 'bg-accent text-ink', 'bg-surface text-fg'][i % 3];
+            <div className="flex flex-col gap-3">
+              {stores.slice(0, 4).map((s, i) => {
+                const nm = pick(s.name_ar, s.name) || '';
+                const tone = ['bg-accent text-ink', 'bg-surface text-fg border border-border', 'bg-ink text-accent dark:bg-raised'][i % 3];
                 return (
                   <Link key={s.id} href={`/store/${s.id}`} className="flex items-center gap-3.5">
-                    <span className={`w-[72px] h-[72px] rounded-[22px] flex items-center justify-center text-3xl font-bold shrink-0 ${tone}`}>
-                      {s.logo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={s.logo_url} alt="" className="w-full h-full object-cover rounded-[22px]" loading="lazy" />
-                      ) : (
-                        Array.from(name)[0] ?? ''
-                      )}
-                    </span>
+                    <span className={`w-16 h-16 rounded-[20px] flex items-center justify-center text-2xl font-bold shrink-0 ${tone}`}>{Array.from(nm)[0] ?? ''}</span>
                     <span className="flex-1 min-w-0 flex flex-col gap-1">
-                      <span className="text-base font-semibold truncate">{name}</span>
+                      <span className="text-base font-semibold truncate">{nm}</span>
                       <StoreMeta store={s} currency={currency} />
                     </span>
                   </Link>
@@ -326,44 +359,115 @@ export default function HomePage() {
             </div>
           </section>
         )}
-
-        {/* campaign banners from the admin */}
-        {flags?.OFFERS !== false && banners.length > 0 && (
-          <section className="px-5 mt-7 flex flex-col gap-2.5">
-            {banners.map((b) => {
-              const dark = isDark(b.color);
-              return (
-                <Link
-                  key={b.id}
-                  href={b.link || '/offers'}
-                  className="relative min-h-[120px] rounded-[26px] p-5 flex items-center overflow-hidden"
-                  style={{ background: b.color || '#0D0D0F', color: dark ? '#fff' : '#0D0D0F' }}
-                >
-                  <div className="relative z-10 max-w-[64%]">
-                    <p className="text-xl font-semibold leading-snug">{pick(b.title_ar, b.title)}</p>
-                    {(b.description || b.description_ar) && (
-                      <p className={`mt-2 text-sm ${dark ? 'text-white/70' : 'text-ink/70'}`}>{pick(b.description_ar, b.description)}</p>
-                    )}
-                  </div>
-                  {b.emoji && (
-                    <span aria-hidden className="absolute end-4 bottom-1 text-[72px] leading-none">
-                      {b.emoji}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </section>
-        )}
       </div>
+
+      {menu && <MenuSheet tx={tx} dir={dir} on={on} onClose={() => setMenu(false)} />}
       <BottomNav />
       <Tour />
+      {toastNode}
     </main>
   );
 }
 
-function isDark(hex: string) {
-  const h = (hex || '#FFD100').replace('#', '');
-  const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
-  return 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) < 140;
+function goldBg(dir: string) {
+  // dark where the text sits (the start side), gold toward the picture
+  const to = dir === 'rtl' ? 'to left' : 'to right';
+  return `linear-gradient(${to}, #15120A 0%, #2E2408 38%, #8A6A00 78%, #D9A800 100%)`;
+}
+
+function Hero({ slides, dir, openLabel }: { slides: Slide[]; dir: string; openLabel: string }) {
+  const [i, setI] = useState(0);
+  const touch = useRef<number | null>(null);
+  const n = slides.length;
+  useEffect(() => {
+    if (i >= n) setI(0);
+  }, [n, i]);
+  useEffect(() => {
+    if (n < 2) return;
+    const iv = setInterval(() => setI((x) => (x + 1) % n), 5000);
+    return () => clearInterval(iv);
+  }, [n, i]);
+  const sign = dir === 'rtl' ? 1 : -1;
+  return (
+    <section
+      className="mt-5 relative rounded-[26px] overflow-hidden"
+      aria-roledescription="carousel"
+      onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
+      onTouchEnd={(e) => {
+        if (touch.current === null) return;
+        const dx = (e.changedTouches[0].clientX - touch.current) * sign;
+        touch.current = null;
+        if (Math.abs(dx) < 40) return;
+        setI((x) => (dx < 0 ? (x - 1 + n) % n : (x + 1) % n));
+      }}
+    >
+      <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(${sign * i * 100}%)` }}>
+        {slides.map((s, k) => (
+          <Link
+            key={s.id}
+            href={s.href}
+            aria-hidden={k !== i}
+            tabIndex={k === i ? 0 : -1}
+            className="w-full shrink-0 min-h-[172px] relative flex items-center ps-5 pe-3 pt-5 pb-8 gap-1"
+            style={{ background: goldBg(dir) }}
+          >
+            <span className="flex-1 min-w-0 relative z-10">
+              <span className="block text-[20px] font-bold text-white leading-snug">{s.title}</span>
+              <span className="block text-[13px] text-white/75 mt-1 line-clamp-2">{s.sub}</span>
+              <span className="mt-3 w-10 h-10 rounded-full bg-accent text-ink flex items-center justify-center" aria-label={openLabel}>
+                <ArrowLeft className="w-5 h-5 ltr:rotate-180" />
+              </span>
+            </span>
+            <ServiceArt kind={s.art} uid={`hero-${s.id}`} className="w-[44%] max-w-[170px] h-auto shrink-0" />
+          </Link>
+        ))}
+      </div>
+      {n > 1 && (
+        <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
+          {slides.map((s, k) => (
+            <button
+              key={s.id}
+              onClick={() => setI(k)}
+              aria-label={`${k + 1} / ${n}`}
+              className={`h-2 rounded-full transition-all ${k === i ? 'w-5 bg-accent' : 'w-2 bg-white/40'}`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function MenuSheet({ tx, dir, on, onClose }: { tx: (typeof TX)['ar']; dir: string; on: (k: string) => boolean; onClose: () => void }) {
+  const items = [
+    { href: '/account', label: tx.mAccount, Icon: UserRound, show: true },
+    { href: '/map', label: tx.mMap, Icon: MapIcon, show: on('MY_MAP') },
+    { href: '/driver', label: tx.mDrive, Icon: Car, show: on('DRIVER_SIGNUP') },
+    { href: '/merchant', label: tx.mStore, Icon: StoreIcon, show: on('STORE_DEVICE') },
+    { href: '/support', label: tx.mSupport, Icon: Headphones, show: true },
+  ].filter((x) => x.show);
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" dir={dir} role="dialog" aria-modal="true" aria-label={tx.menu}>
+      <button aria-label={tx.close} onClick={onClose} className="absolute inset-0 bg-black/50 animate-tour-fade" />
+      <div className="relative w-full max-w-md bg-background rounded-t-[28px] sm:rounded-[28px] safe-bottom p-5 animate-slide-up">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xl font-semibold">{tx.menu}</h2>
+          <button onClick={onClose} aria-label={tx.close} className="w-10 h-10 rounded-full bg-surface flex items-center justify-center">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <nav className="flex flex-col">
+          {items.map(({ href, label, Icon }) => (
+            <Link key={href} href={href} className="h-14 flex items-center gap-3 border-b border-border last:border-0">
+              <span className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center">
+                <Icon className="w-5 h-5" />
+              </span>
+              <span className="flex-1 font-medium">{label}</span>
+              <ChevronLeft className="w-5 h-5 text-muted ltr:rotate-180" />
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </div>
+  );
 }

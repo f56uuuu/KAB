@@ -1,5 +1,8 @@
 'use client';
 
+import { isOn } from '@/lib/features';
+import { useFlags } from '@/lib/hooks';
+
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -7,7 +10,7 @@ import type { LatLng } from '@/lib/maps';
 import { REPORT_KINDS, reportTxt, submitReport, type ReportKind } from '@/lib/reports';
 
 /** The yellow "report" button that sits at the bottom of the map. */
-export function ReportButton({ onClick, className = '' }: { onClick: () => void; className?: string }) {
+function ReportButtonInner({ onClick, className = '' }: { onClick: () => void; className?: string }) {
   const { lang } = useI18n();
   return (
     <button
@@ -74,4 +77,11 @@ export function ReportSheet({ open, at, onClose, onDone }: { open: boolean; at: 
       </div>
     </div>
   );
+}
+
+/** Hidden when the super admin switches NAV_REPORTS off. */
+export function ReportButton(props: React.ComponentProps<typeof ReportButtonInner>) {
+  const flags = useFlags();
+  if (!isOn(flags, 'NAV_REPORTS')) return null;
+  return <ReportButtonInner {...props} />;
 }

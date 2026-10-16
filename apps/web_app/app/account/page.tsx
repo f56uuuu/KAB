@@ -10,11 +10,13 @@ import { Button, TopBar, inputCls, useToast, btn } from '@/components/ui';
 import { KMark } from '@/components/Logo';
 import { LANGS, useI18n } from '@/lib/i18n';
 import { useTheme, type ThemePref } from '@/lib/theme';
-import { currentUser, sb, useProfile, useStickyState } from '@/lib/hooks';
+import { currentUser, sb, useFlags, useProfile, useStickyState } from '@/lib/hooks';
+import { isOn } from '@/lib/features';
 import { getCurrentPosition, mapProvider } from '@/lib/maps';
 
 export default function AccountPage() {
   const { t, lang, setLang } = useI18n();
+  const flags = useFlags();
   const { pref, setPref } = useTheme();
   const profile = useProfile();
   const [name, setName] = useState('');
@@ -178,10 +180,10 @@ export default function AccountPage() {
 
         {/* links */}
         <section className="rounded-2xl border border-border divide-y divide-border overflow-hidden">
-          <Row href="/map" Icon={MapIcon} label={t('account.mymap')} />
+          {isOn(flags, 'MY_MAP') && <Row href="/map" Icon={MapIcon} label={t('account.mymap')} />}
           <Row href="/notifications" Icon={Bell} label={t('account.notifications')} />
           <Row href="/driver" Icon={Car} label={t('account.drive')} />
-          <Row href="/merchant" Icon={StoreIcon} label={lang === 'ar' || lang === 'ku' ? 'شاشة المطعم أو المتجر' : 'Store screen'} />
+          {isOn(flags, 'STORE_DEVICE') && <Row href="/merchant" Icon={StoreIcon} label={lang === 'ar' || lang === 'ku' ? 'شاشة المطعم أو المتجر' : 'Store screen'} />}
           <Row
             href="/support"
             Icon={Headphones}

@@ -1,5 +1,8 @@
 'use client';
 
+import { isOn } from '@/lib/features';
+import { useFlags } from '@/lib/hooks';
+
 import { useState } from 'react';
 import { TicketPercent, X } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -9,7 +12,7 @@ import { money } from '@/lib/format';
 export type Promo = { code: string; discount: number } | null;
 
 /** Validates a code on the server (check_coupon) and shows the preview discount. */
-export function PromoField({
+function PromoFieldInner({
   service,
   amount,
   fee = 0,
@@ -82,4 +85,11 @@ export function PromoField({
       {err && <p className="text-danger text-xs mt-1.5 font-medium">{err}</p>}
     </div>
   );
+}
+
+/** Hidden when the super admin switches COUPONS off. */
+export function PromoField(props: React.ComponentProps<typeof PromoFieldInner>) {
+  const flags = useFlags();
+  if (!isOn(flags, 'COUPONS')) return null;
+  return <PromoFieldInner {...props} />;
 }

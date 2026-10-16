@@ -42,7 +42,8 @@ function Food() {
   const [cityId, setCityId] = useState<number | null>(null);
   const [currency, setCurrency] = useState('IQD');
   const [stores, setStores] = useState<any[] | null>(null);
-  const [cat, setCat] = useState<string>('all');
+  const startCat = params.get('cat');
+  const [cat, setCat] = useState<string>(startCat && (cats as readonly string[]).includes(startCat) ? startCat : 'all');
   const [q, setQ] = useState('');
 
   // city: saved choice, else nearest to the user

@@ -1,5 +1,8 @@
 'use client';
 
+import { isOn } from '@/lib/features';
+import { useFlags } from '@/lib/hooks';
+
 import { useEffect, useRef, useState } from 'react';
 import { Mic } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
@@ -13,7 +16,7 @@ const HINT: Record<string, { listening: string; label: string; tryIt: string }> 
 };
 
 /** Microphone button: listens once and hands back what was said. Hidden where the browser has no speech recognition. */
-export function VoiceButton({ onText, className = '' }: { onText: (text: string) => void; className?: string }) {
+function VoiceButtonInner({ onText, className = '' }: { onText: (text: string) => void; className?: string }) {
   const { lang, dir } = useI18n();
   const h = HINT[lang] ?? HINT.en;
   const [ok, setOk] = useState(false);
@@ -55,4 +58,11 @@ export function VoiceButton({ onText, className = '' }: { onText: (text: string)
       )}
     </>
   );
+}
+
+/** Hidden when the super admin switches VOICE_SEARCH off. */
+export function VoiceButton(props: React.ComponentProps<typeof VoiceButtonInner>) {
+  const flags = useFlags();
+  if (!isOn(flags, 'VOICE_SEARCH')) return null;
+  return <VoiceButtonInner {...props} />;
 }

@@ -1,5 +1,8 @@
 'use client';
 
+import { isOn } from '@/lib/features';
+import { useFlags } from '@/lib/hooks';
+
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { KMark } from '@/components/Logo';
@@ -101,7 +104,7 @@ type Rect = { top: number; left: number; width: number; height: number };
 const PAD = 8;
 
 /** First-run guided tour of the home screen: spotlight + playful cards, shown once after sign-up. */
-export function Tour() {
+function TourInner() {
   const { lang, dir } = useI18n();
   const copy = COPY[(lang as keyof typeof COPY) in COPY ? (lang as keyof typeof COPY) : 'en'];
   const [open, setOpen] = useState(false);
@@ -341,4 +344,11 @@ function Confetti() {
       ))}
     </div>
   );
+}
+
+/** Hidden when the super admin switches TOUR off. */
+export function Tour() {
+  const flags = useFlags();
+  if (!isOn(flags, 'TOUR')) return null;
+  return <TourInner />;
 }

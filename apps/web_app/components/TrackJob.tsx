@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, Phone, Share2, ShieldCheck, Star, XCircle } from 'lucide-react';
 import { KapMap, type MapMarker } from '@/components/KapMap';
+import { isOn } from '@/lib/features';
 import { BackButton, Button, Stars, useToast, btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
-import { sb } from '@/lib/hooks';
+import { sb, useFlags } from '@/lib/hooks';
 import { mapProvider, type LatLng } from '@/lib/maps';
 import { CANCELLABLE, DONE, STEPS, TABLE, isActive, stepIndex, type JobKind } from '@/lib/jobs';
 import { kmBetween, money } from '@/lib/format';
@@ -90,6 +91,7 @@ export function TrackJob({ kind, id }: { kind: JobKind; id: string }) {
   const [path, setPath] = useState<[number, number][] | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [stars, setStars] = useState(0);
+  const ratingsOn = isOn(useFlags(), 'RATINGS');
   const [review, setReview] = useState('');
   const [rated, setRated] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -371,7 +373,7 @@ export function TrackJob({ kind, id }: { kind: JobKind; id: string }) {
           )}
 
           {/* rating */}
-          {finished && view.driverId && !rated && !view.rated && (
+          {finished && ratingsOn && view.driverId && !rated && !view.rated && (
             <div className="rounded-2xl border border-border p-4 flex flex-col gap-3">
               <p className="font-extrabold text-center">{t('track.rate_title')}</p>
               <Stars value={stars} onChange={setStars} />

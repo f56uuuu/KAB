@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { money } from '@/lib/format';
 
 /** Floating "view cart" bar shown above the bottom nav whenever the cart has items. */
-export function CartBar({ bottom = 'bottom-[88px]' }: { bottom?: string }) {
+export function CartBar({ bottom = 'bottom-[80px]' }: { bottom?: string }) {
   const cart = useCart();
   const { t, locale, pick } = useI18n();
   const n = cartCount(cart);
