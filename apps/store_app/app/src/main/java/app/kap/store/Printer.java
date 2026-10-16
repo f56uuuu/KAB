@@ -151,10 +151,22 @@ class Printer {
         if (!a.isEnabled()) throw new Exception("bluetooth is off");
         BluetoothDevice d = findPrinter(a);
         if (d == null) return null;
-        a.cancelDiscovery();
+        try {
+            a.cancelDiscovery(); // needs BLUETOOTH_SCAN on Android 12+; not needed for a paired printer
+        } catch (Exception ignored) {
+        }
         BluetoothSocket s = d.createRfcommSocketToServiceRecord(SPP);
         try {
-            s.connect();
+            try {
+                s.connect();
+            } catch (Exception first) {
+                try {
+                    s.close();
+                } catch (Exception ignored) {
+                }
+                s = d.createInsecureRfcommSocketToServiceRecord(SPP);
+                s.connect();
+            }
             OutputStream o = s.getOutputStream();
             for (int off = 0; off < data.length; off += 4096) {
                 o.write(data, off, Math.min(4096, data.length - off));
