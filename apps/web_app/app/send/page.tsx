@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LocateFixed, X } from 'lucide-react';
@@ -15,12 +16,12 @@ import { errorCode, money } from '@/lib/format';
 import { trips as tripStore } from '@/lib/offline';
 
 const TYPES = [
-  { key: 'documents', emoji: '📄' },
-  { key: 'parcel', emoji: '📦' },
-  { key: 'food', emoji: '🥡' },
-  { key: 'gift', emoji: '🎁' },
-  { key: 'keys', emoji: '🔑' },
-  { key: 'other', emoji: '✨' },
+  { key: 'documents', emoji: 'document' },
+  { key: 'parcel', emoji: 'box' },
+  { key: 'food', emoji: 'takeout' },
+  { key: 'gift', emoji: 'gift' },
+  { key: 'keys', emoji: 'keys' },
+  { key: 'other', emoji: 'sparkle' },
 ] as const;
 
 export default function SendPage() {
@@ -199,7 +200,7 @@ export default function SendPage() {
       </div>
 
       <div className="max-w-md mx-auto -mt-6 relative z-[600] bg-background rounded-t-sheet px-5 pt-6 flex flex-col gap-5">
-        <h1 className="text-2xl font-black">{t('send.title')}</h1>
+        <h1 className="text-2xl font-bold">{t('send.title')}</h1>
 
         <div className="rounded-2xl border border-border divide-y divide-border">
           {pointRow('from')}
@@ -211,18 +212,18 @@ export default function SendPage() {
         {!editing && (
           <>
             <section>
-              <h2 className="font-extrabold mb-3">{t('send.what')}</h2>
+              <h2 className="font-semibold mb-3">{t('send.what')}</h2>
               <div className="grid grid-cols-3 gap-2">
                 {TYPES.map((x) => (
                   <button
                     key={x.key}
                     onClick={() => setType(x.key)}
                     aria-pressed={type === x.key}
-                    className={`h-20 rounded-2xl border-2 flex flex-col items-center justify-center gap-1 text-xs font-bold ${
-                      type === x.key ? 'border-fg bg-surface' : 'border-border'
+                    className={`h-[92px] rounded-[20px] border-2 flex flex-col items-center justify-center gap-1.5 text-xs font-semibold transition-colors ${
+                      type === x.key ? 'border-accent bg-accent/10' : 'border-border bg-surface'
                     }`}
                   >
-                    <span className="text-2xl">{x.emoji}</span>
+                    <Glyph name={x.emoji} className="w-10 h-10" />
                     {t(`send.type.${x.key}` as any)}
                   </button>
                 ))}
@@ -267,12 +268,12 @@ export default function SendPage() {
                         role="radio"
                         aria-checked={on}
                         onClick={() => setVehicle(o.vehicle_type)}
-                        className={`rounded-2xl border-2 p-3 text-start ${on ? 'border-fg bg-surface' : 'border-border'}`}
+                        className={`rounded-[20px] border-2 p-3 text-start transition-colors ${on ? 'border-accent bg-accent/10' : 'border-border bg-surface'}`}
                       >
-                        <span className="text-2xl">{o.vehicle_type === 'BIKE' ? '🛵' : '🚗'}</span>
-                        <span className="block font-extrabold mt-1">{t(`vehicle.${o.vehicle_type}` as any)}</span>
+                        <Glyph name={o.vehicle_type === 'BIKE' ? 'scooter' : 'sedan'} className="w-12 h-12" />
+                        <span className="block font-semibold mt-1">{t(`vehicle.${o.vehicle_type}` as any)}</span>
                         <span className="block text-[11px] text-muted leading-tight">{t(`vehicle.${o.vehicle_type}_sub` as any)}</span>
-                        <span className="block font-black mt-2">{money(o.amount, quote.currency, locale)}</span>
+                        <span className="block font-bold mt-2">{money(o.amount, quote.currency, locale)}</span>
                       </button>
                     );
                   })}

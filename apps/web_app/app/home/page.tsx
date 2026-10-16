@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Bell, Car, ChevronLeft, Headphones, Map as MapIcon, Menu, Search, Store as StoreIcon, UserRound, X } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
-import { ServiceArt, type ArtKind } from '@/components/ServiceArt';
+import { Glyph } from '@/components/Glyph';
+import { goldBg } from '@/lib/brand';
 import { StoreMeta } from '@/components/StoreMeta';
 import { Tour } from '@/components/Tour';
 import { useToast } from '@/components/ui';
@@ -151,8 +152,8 @@ const TX = {
   },
 };
 
-type Tile = { key: string; flag: string; parent?: string; href?: string; art: ArtKind; label: string; soon?: boolean };
-type Slide = { id: string; title: string; sub: string; href: string; art: ArtKind };
+type Tile = { key: string; flag: string; parent?: string; href?: string; art: string; label: string; soon?: boolean };
+type Slide = { id: string; title: string; sub: string; href: string; art: string };
 
 export default function HomePage() {
   const { t, pick, lang, dir } = useI18n();
@@ -211,11 +212,11 @@ export default function HomePage() {
       { key: 'taxi', flag: 'RIDE', href: '/ride/new', art: 'taxi', label: tx.taxi },
       { key: 'delivery', flag: 'DELIVERY', href: '/send', art: 'scooter', label: tx.delivery },
       { key: 'food', flag: 'FOOD', href: '/food', art: 'burger', label: tx.food },
-      { key: 'market', flag: 'MARKET', href: '/food?type=market', art: 'bags', label: tx.market },
+      { key: 'market', flag: 'MARKET', href: '/food?type=market', art: 'bag', label: tx.market },
       { key: 'pharmacy', flag: 'PHARMACY', parent: 'MARKET', href: '/food?type=market&cat=pharmacy', art: 'pharmacy', label: tx.pharmacy },
       { key: 'gifts', flag: 'GIFTS', parent: 'MARKET', href: '/food?type=market&cat=flowers', art: 'gift', label: tx.gifts },
-      { key: 'home', flag: 'HOME_SERVICES', art: 'home', label: tx.homeSvc, soon: true },
-      { key: 'car', flag: 'CAR_SERVICES', art: 'car', label: tx.carSvc, soon: true },
+      { key: 'home', flag: 'HOME_SERVICES', art: 'homefix', label: tx.homeSvc, soon: true },
+      { key: 'car', flag: 'CAR_SERVICES', art: 'carfix', label: tx.carSvc, soon: true },
     ];
     return all.filter((x) => on(x.flag) && (!x.parent || on(x.parent)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -227,13 +228,13 @@ export default function HomePage() {
         ['RIDE', '/ride/new', 'taxi'],
         ['FOOD', '/food', 'burger'],
         ['DELIVERY', '/send', 'scooter'],
-        ['MARKET', '/food?type=market', 'bags'],
+        ['MARKET', '/food?type=market', 'bag'],
       ] as const
     )
       .filter(([k]) => on(k))
       .map(([k, href, art]) => ({ id: k, title: tx.slides[k][0], sub: tx.slides[k][1], href, art }));
     const promo: Slide[] = on('OFFERS')
-      ? banners.map((b) => ({ id: `b${b.id}`, title: pick(b.title_ar, b.title), sub: pick(b.description_ar, b.description) ?? '', href: b.link || '/offers', art: 'gift' as ArtKind }))
+      ? banners.map((b) => ({ id: `b${b.id}`, title: pick(b.title_ar, b.title), sub: pick(b.description_ar, b.description) ?? '', href: b.link || '/offers', art: b.emoji || 'gift' }))
       : [];
     return [...svc, ...promo];
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -303,7 +304,7 @@ export default function HomePage() {
               const body = (
                 <>
                   {x.soon && <span className="absolute top-2 start-2 text-[10px] font-semibold rounded-full px-2 py-0.5 bg-accent text-ink">{tx.soon}</span>}
-                  <ServiceArt kind={x.art} uid={`tile-${x.key}`} className={`h-[68px] w-auto ${x.soon ? 'opacity-80' : ''}`} />
+                  <Glyph name={x.art} className={`w-[72px] h-[72px] drop-shadow-[0_6px_8px_rgba(0,0,0,.18)] ${x.soon ? 'opacity-70 grayscale-[.3]' : ''}`} />
                   <span className="text-[15px] font-semibold text-center leading-tight">{x.label}</span>
                 </>
               );
@@ -330,7 +331,7 @@ export default function HomePage() {
             <span className="w-11 h-11 rounded-full bg-accent text-ink flex items-center justify-center shrink-0">
               <ArrowLeft className="w-5 h-5 ltr:rotate-180" />
             </span>
-            <ServiceArt kind="gift" uid="offer" className="w-[96px] h-auto shrink-0" />
+            <Glyph name="ticket" className="w-[88px] h-[88px] shrink-0 -rotate-6 drop-shadow-[0_8px_12px_rgba(0,0,0,.35)]" />
           </Link>
         )}
 
@@ -343,12 +344,13 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="flex flex-col gap-3">
-              {stores.slice(0, 4).map((s, i) => {
+              {stores.slice(0, 4).map((s) => {
                 const nm = pick(s.name_ar, s.name) || '';
-                const tone = ['bg-accent text-ink', 'bg-surface text-fg border border-border', 'bg-ink text-accent dark:bg-raised'][i % 3];
                 return (
                   <Link key={s.id} href={`/store/${s.id}`} className="flex items-center gap-3.5">
-                    <span className={`w-16 h-16 rounded-[20px] flex items-center justify-center text-2xl font-bold shrink-0 ${tone}`}>{Array.from(nm)[0] ?? ''}</span>
+                    <span className="w-16 h-16 rounded-[20px] bg-surface border border-border flex items-center justify-center shrink-0">
+                      <Glyph name={s.emoji} fallback={s.category} className="w-11 h-11" />
+                    </span>
                     <span className="flex-1 min-w-0 flex flex-col gap-1">
                       <span className="text-base font-semibold truncate">{nm}</span>
                       <StoreMeta store={s} currency={currency} />
@@ -367,12 +369,6 @@ export default function HomePage() {
       {toastNode}
     </main>
   );
-}
-
-function goldBg(dir: string) {
-  // dark where the text sits (the start side), gold toward the picture
-  const to = dir === 'rtl' ? 'to left' : 'to right';
-  return `linear-gradient(${to}, #15120A 0%, #2E2408 38%, #8A6A00 78%, #D9A800 100%)`;
 }
 
 function Hero({ slides, dir, openLabel }: { slides: Slide[]; dir: string; openLabel: string }) {
@@ -418,7 +414,7 @@ function Hero({ slides, dir, openLabel }: { slides: Slide[]; dir: string; openLa
                 <ArrowLeft className="w-5 h-5 ltr:rotate-180" />
               </span>
             </span>
-            <ServiceArt kind={s.art} uid={`hero-${s.id}`} className="w-[44%] max-w-[170px] h-auto shrink-0" />
+            <Glyph name={s.art} className="w-[40%] max-w-[150px] aspect-square shrink-0 drop-shadow-[0_10px_14px_rgba(0,0,0,.4)]" />
           </Link>
         ))}
       </div>

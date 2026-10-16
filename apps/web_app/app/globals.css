@@ -205,3 +205,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* soft gold light behind a KAP glyph (store headers, store cards) */
+.kap-glow {
+  background: radial-gradient(circle at 50% 58%, rgba(255, 209, 0, 0.32) 0%, rgba(255, 209, 0, 0.1) 38%, transparent 66%);
+}

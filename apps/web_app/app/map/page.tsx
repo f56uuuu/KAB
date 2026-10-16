@@ -111,7 +111,7 @@ export default function MyMapPage() {
 
   const markers = useMemo<MapMarker[]>(() => {
     const m: MapMarker[] = reports.map((r) => ({ id: `r${r.id}`, kind: 'report', lat: r.lat, lng: r.lng, emoji: REPORT_EMOJI[r.kind as ReportKind] }));
-    saved.forEach((p) => m.push({ id: p.id, kind: 'job', lat: p.lat, lng: p.lng, emoji: p.kind === 'home' ? '🏠' : p.kind === 'work' ? '💼' : '⭐', label: p.name }));
+    saved.forEach((p) => m.push({ id: p.id, kind: 'job', lat: p.lat, lng: p.lng, emoji: p.kind === 'home' ? 'house' : p.kind === 'work' ? 'briefcase' : 'star', label: p.name }));
     if (me) m.push({ id: 'me', kind: 'me', ...me });
     if (draft) m.push({ id: 'draft', kind: 'pickup', ...draft.point });
     return m;
@@ -170,7 +170,7 @@ export default function MyMapPage() {
       const at = me ?? (await getCurrentPosition()).point;
       const r = await submitReport(c.kind, at);
       const rt = reportTxt(lang);
-      toast(r === 'sent' ? `${REPORT_EMOJI[c.kind]} ${rt.thanks}` : r === 'queued' ? rt.queued : r === 'login' ? rt.login : rt.failed);
+      toast(r === 'sent' ? rt.thanks : r === 'queued' ? rt.queued : r === 'login' ? rt.login : rt.failed);
       if (r === 'sent' || r === 'queued') setReports((rs) => [{ id: `local-${Date.now()}`, kind: c.kind, lat: at.lat, lng: at.lng }, ...rs]);
       return;
     }

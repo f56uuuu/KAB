@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { MapPin, Search, Store as StoreIcon } from 'lucide-react';
+import { MapPin, Search } from 'lucide-react';
 import { BottomNav } from '@/components/BottomNav';
 import { Chip, Empty, TopBar } from '@/components/ui';
 import { StoreMeta } from '@/components/StoreMeta';
+import { Glyph } from '@/components/Glyph';
 import { CartBar } from '@/components/CartBar';
 import { CityPicker } from '@/components/CityPicker';
 import { useCities } from '@/lib/cities';
@@ -130,18 +131,14 @@ function Food() {
             ))}
           </div>
         ) : shown.length === 0 ? (
-          <Empty icon={<StoreIcon className="w-7 h-7" />} title={t('food.no_stores')} />
+          <Empty glyph="shop" title={t('food.no_stores')} />
         ) : (
           <div className="grid gap-5 md:grid-cols-2">
             {shown.map((s) => (
               <Link key={s.id} href={`/store/${s.id}`} className={`block ${s.is_open ? '' : 'opacity-60'}`}>
-                <div
-                  className="relative h-36 rounded-3xl flex items-center justify-center overflow-hidden"
-                  style={{ background: `linear-gradient(135deg, ${s.color}33, ${s.color}14)` }}
-                >
-                  <span className="text-7xl" aria-hidden>
-                    {s.emoji}
-                  </span>
+                <div className="relative h-36 rounded-[26px] bg-surface border border-border flex items-center justify-center overflow-hidden">
+                  <span aria-hidden className="absolute inset-0 kap-glow" />
+                  <Glyph name={s.emoji} fallback={s.category} className="relative w-24 h-24 drop-shadow-[0_10px_12px_rgba(0,0,0,.22)]" />
                   {!s.is_open && (
                     <span className="absolute top-3 start-3 bg-ink text-white text-xs font-bold px-3 py-1 rounded-full">
                       {t('food.closed')}
@@ -150,7 +147,7 @@ function Food() {
                 </div>
                 <div className="flex items-start justify-between mt-2.5 gap-2">
                   <div className="min-w-0">
-                    <p className="font-extrabold text-lg leading-tight truncate">{pick(s.name_ar, s.name)}</p>
+                    <p className="font-semibold text-lg leading-tight truncate">{pick(s.name_ar, s.name)}</p>
                     <p className="text-xs text-muted">{t(`food.cat.${s.category}` as any)}</p>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import { useEffect, useState } from 'react';
 import { Globe } from 'lucide-react';
 import Link from 'next/link';
@@ -10,9 +11,9 @@ import { langInfo, useI18n } from '@/lib/i18n';
 import { PhoneVerify, otpReady } from '@/components/PhoneVerify';
 
 const COUNTRIES = [
-  { code: '+964', flag: '🇮🇶' },
-  { code: '+971', flag: '🇦🇪' },
-  { code: '+963', flag: '🇸🇾' },
+  { code: '+964', flag: 'flag_iq' },
+  { code: '+971', flag: 'flag_ae' },
+  { code: '+963', flag: 'flag_sy' },
 ];
 
 // When the admin has connected an SMS gateway, sign-in is by a 6-digit code sent to the phone.
@@ -95,18 +96,21 @@ export default function LoginPage() {
         ) : (
           <>
         <div className="flex gap-2" dir="ltr">
-          <select
-            aria-label={t('login.country')}
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="h-14 rounded-[18px] border-[1.5px] border-border bg-surface px-3 font-semibold text-base"
-          >
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.flag} {c.code}
-              </option>
-            ))}
-          </select>
+          <div className="relative shrink-0">
+            <Glyph name={COUNTRIES.find((c) => c.code === country)?.flag} className="absolute start-2.5 top-1/2 -translate-y-1/2 w-7 h-7 pointer-events-none" />
+            <select
+              aria-label={t('login.country')}
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="h-14 rounded-[18px] border-[1.5px] border-border bg-surface ps-11 pe-3 appearance-none font-semibold text-base"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code}
+                </option>
+              ))}
+            </select>
+          </div>
           <input
             type="tel"
             inputMode="tel"

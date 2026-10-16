@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import { isOn } from '@/lib/features';
 import { useFlags } from '@/lib/hooks';
 
@@ -34,14 +35,14 @@ const COPY: Record<'ar' | 'en' | 'ku' | 'tr', Copy> = {
     finish: 'ابدأ استخدام كاب',
     of: (a, b) => `${a} من ${b}`,
     steps: [
-      { emoji: '👋', title: 'أهلاً بك في كاب!', body: 'جولة سريعة بدقيقة نعرّفك فيها على أهم الأشياء. وعد ما نطوّل 😄' },
-      { target: 'where', emoji: '🚕', title: 'وين رايح؟', body: 'اكتب وجهتك من هنا، وتشوف السعر قبل ما تأكّد. بدون مفاجآت.' },
-      { target: 'services', emoji: '🍔', title: 'كل شي بمكان واحد', body: 'طعام، توصيل طرود، متجر، وعروض — اضغط أي خدمة وابدأ. الشارة الحمراء تعني في خصم الآن!' },
-      { target: 'mymap', emoji: '🗺️', title: 'كاب يصير تطبيق خرائطك', body: 'تكدر تحفظ مكان بيتك وعملك وتستخدم التطبيق كتطبيق خرائط فقط، حتى تروح وتجي بكل سهولة — مع إرشاد صوتي خطوة بخطوة، وتبلّغ عن الزحام والحوادث بضغطة وحدة. ويشتغل حتى بدون نت.' },
-      { target: 'drive', emoji: '🚲', title: 'اشتغل ويّا كاب', body: 'هسّه صار تكدر تشتغل كسائق كاب بكل وسائل النقل: سيارة 🚗، دراجة نارية 🛵، وحتى دراجة هوائية 🚲.' },
-      { target: 'nav-activity', emoji: '📍', title: 'تابع كل طلب', body: 'رحلاتك وطلباتك هنا، وتشوف الكابتن على الخريطة لحظة بلحظة.' },
-      { target: 'nav-offers', emoji: '🎁', title: 'لا تفوّت العروض', body: 'كوبونات وخصومات جديدة تنتظرك. انسخ الكود واستخدمه عند الدفع.' },
-      { emoji: '🎉', title: 'جاهز تنطلق!', body: 'هذا كل شي. أول مشوار عليك يكون أسهل من أي وقت. تقدر تعيد الجولة من صفحة الحساب.' },
+      { emoji: 'bubble', title: 'أهلاً بك في كاب!', body: 'جولة سريعة بدقيقة نعرّفك فيها على أهم الأشياء. وعد ما نطوّل.' },
+      { target: 'where', emoji: 'taxi', title: 'وين رايح؟', body: 'اكتب وجهتك من هنا، وتشوف السعر قبل ما تأكّد. بدون مفاجآت.' },
+      { target: 'services', emoji: 'burger', title: 'كل شي بمكان واحد', body: 'طعام، توصيل طرود، متجر، وعروض — اضغط أي خدمة وابدأ. الشارة الحمراء تعني في خصم الآن!' },
+      { target: 'mymap', emoji: 'map', title: 'كاب يصير تطبيق خرائطك', body: 'تكدر تحفظ مكان بيتك وعملك وتستخدم التطبيق كتطبيق خرائط فقط، حتى تروح وتجي بكل سهولة — مع إرشاد صوتي خطوة بخطوة، وتبلّغ عن الزحام والحوادث بضغطة وحدة. ويشتغل حتى بدون نت.' },
+      { target: 'drive', emoji: 'bicycle', title: 'اشتغل ويّا كاب', body: 'هسّه صار تكدر تشتغل كسائق كاب بكل وسائل النقل: سيارة، دراجة نارية، وحتى دراجة هوائية.' },
+      { target: 'nav-activity', emoji: 'pin', title: 'تابع كل طلب', body: 'رحلاتك وطلباتك هنا، وتشوف الكابتن على الخريطة لحظة بلحظة.' },
+      { target: 'nav-offers', emoji: 'gift', title: 'لا تفوّت العروض', body: 'كوبونات وخصومات جديدة تنتظرك. انسخ الكود واستخدمه عند الدفع.' },
+      { emoji: 'party', title: 'جاهز تنطلق!', body: 'هذا كل شي. أول مشوار عليك يكون أسهل من أي وقت. تقدر تعيد الجولة من صفحة الحساب.' },
     ],
   },
   en: {
@@ -52,14 +53,14 @@ const COPY: Record<'ar' | 'en' | 'ku' | 'tr', Copy> = {
     finish: 'Start using KAP',
     of: (a, b) => `${a} of ${b}`,
     steps: [
-      { emoji: '👋', title: 'Welcome to KAP!', body: 'A 30-second tour of the essentials. We promise to keep it short 😄' },
-      { target: 'where', emoji: '🚕', title: 'Where to?', body: 'Type your destination here and see the price before you confirm. No surprises.' },
-      { target: 'services', emoji: '🍔', title: 'Everything in one place', body: 'Food, parcels, market and offers — tap any service to start. A red badge means there’s a deal right now!' },
-      { target: 'mymap', emoji: '🗺️', title: 'KAP is your map app too', body: 'Save your home and work and use KAP just as a map app to come and go with ease — spoken turn-by-turn directions, one-tap reports for traffic and crashes, and it works offline.' },
-      { target: 'drive', emoji: '🚲', title: 'Earn with KAP', body: 'You can now work as a KAP captain with any ride: car 🚗, motorbike 🛵, or even a bicycle 🚲.' },
-      { target: 'nav-activity', emoji: '📍', title: 'Follow every order', body: 'Your trips and orders live here, with the captain live on the map.' },
-      { target: 'nav-offers', emoji: '🎁', title: 'Never miss a deal', body: 'Fresh coupons are waiting. Copy a code and use it at checkout.' },
-      { emoji: '🎉', title: 'You’re all set!', body: 'That’s it. Your first ride is easier than ever. You can replay this tour from Account.' },
+      { emoji: 'bubble', title: 'Welcome to KAP!', body: 'A 30-second tour of the essentials. We promise to keep it short.' },
+      { target: 'where', emoji: 'taxi', title: 'Where to?', body: 'Type your destination here and see the price before you confirm. No surprises.' },
+      { target: 'services', emoji: 'burger', title: 'Everything in one place', body: 'Food, parcels, market and offers — tap any service to start. A red badge means there’s a deal right now!' },
+      { target: 'mymap', emoji: 'map', title: 'KAP is your map app too', body: 'Save your home and work and use KAP just as a map app to come and go with ease — spoken turn-by-turn directions, one-tap reports for traffic and crashes, and it works offline.' },
+      { target: 'drive', emoji: 'bicycle', title: 'Earn with KAP', body: 'You can now work as a KAP captain with any ride: car, motorbike, or even a bicycle.' },
+      { target: 'nav-activity', emoji: 'pin', title: 'Follow every order', body: 'Your trips and orders live here, with the captain live on the map.' },
+      { target: 'nav-offers', emoji: 'gift', title: 'Never miss a deal', body: 'Fresh coupons are waiting. Copy a code and use it at checkout.' },
+      { emoji: 'party', title: 'You’re all set!', body: 'That’s it. Your first ride is easier than ever. You can replay this tour from Account.' },
     ],
   },
   ku: {
@@ -70,14 +71,14 @@ const COPY: Record<'ar' | 'en' | 'ku' | 'tr', Copy> = {
     finish: 'دەست بکە بە KAP',
     of: (a, b) => `${a} لە ${b}`,
     steps: [
-      { emoji: '👋', title: 'بەخێربێیت بۆ KAP!', body: 'گەشتێکی خێرای نیو خولەکی بۆ گرنگترین شتەکان. بەڵێن دەدەین درێژی نەکەینەوە 😄' },
-      { target: 'where', emoji: '🚕', title: 'بۆ کوێ دەچیت؟', body: 'شوێنی مەبەست لێرە بنووسە و نرخەکە ببینە پێش پشتڕاستکردنەوە.' },
-      { target: 'services', emoji: '🍔', title: 'هەموو شت لە یەک شوێن', body: 'خواردن، گەیاندن، بازاڕ و ئۆفەر — هەر خزمەتگوزارییەک دابگرە. نیشانەی سوور واتە داشکاندن هەیە!' },
-      { target: 'mymap', emoji: '🗺️', title: 'KAP نەخشەی تۆشە', body: 'شوێنی ماڵ و کارت پاشەکەوت بکە و KAP تەنها وەک نەخشە بەکاربهێنە بۆ هاتوچۆی ئاسان — ڕێنمایی دەنگی هەنگاو بە هەنگاو و ڕاپۆرتی قەرەباڵغی بە یەک دەست لێدان. بێ ئینتەرنێتیش کار دەکات.' },
-      { target: 'drive', emoji: '🚲', title: 'لەگەڵ KAP کار بکە', body: 'ئێستا دەتوانیت وەک کاپتنی KAP کار بکەیت بە هەموو ئامرازێک: ئۆتۆمبێل 🚗، ماتۆڕ 🛵، تەنانەت پاسکیل 🚲.' },
-      { target: 'nav-activity', emoji: '📍', title: 'هەموو داواکارییەک بەدواداچوون بکە', body: 'گەشت و داواکارییەکانت لێرەن، کاپتن لەسەر نەخشە دەبینیت.' },
-      { target: 'nav-offers', emoji: '🎁', title: 'ئۆفەرەکان لەدەست مەدە', body: 'کوپۆنی نوێ چاوەڕێتن. کۆدەکە کۆپی بکە و لە کاتی پارەداندا بەکاری بهێنە.' },
-      { emoji: '🎉', title: 'ئامادەیت!', body: 'ئەوە بوو. دەتوانیت لە پەڕەی هەژمارەوە گەشتەکە دووبارە بکەیتەوە.' },
+      { emoji: 'bubble', title: 'بەخێربێیت بۆ KAP!', body: 'گەشتێکی خێرای نیو خولەکی بۆ گرنگترین شتەکان. بەڵێن دەدەین درێژی نەکەینەوە.' },
+      { target: 'where', emoji: 'taxi', title: 'بۆ کوێ دەچیت؟', body: 'شوێنی مەبەست لێرە بنووسە و نرخەکە ببینە پێش پشتڕاستکردنەوە.' },
+      { target: 'services', emoji: 'burger', title: 'هەموو شت لە یەک شوێن', body: 'خواردن، گەیاندن، بازاڕ و ئۆفەر — هەر خزمەتگوزارییەک دابگرە. نیشانەی سوور واتە داشکاندن هەیە!' },
+      { target: 'mymap', emoji: 'map', title: 'KAP نەخشەی تۆشە', body: 'شوێنی ماڵ و کارت پاشەکەوت بکە و KAP تەنها وەک نەخشە بەکاربهێنە بۆ هاتوچۆی ئاسان — ڕێنمایی دەنگی هەنگاو بە هەنگاو و ڕاپۆرتی قەرەباڵغی بە یەک دەست لێدان. بێ ئینتەرنێتیش کار دەکات.' },
+      { target: 'drive', emoji: 'bicycle', title: 'لەگەڵ KAP کار بکە', body: 'ئێستا دەتوانیت وەک کاپتنی KAP کار بکەیت بە هەموو ئامرازێک: ئۆتۆمبێل، ماتۆڕ، تەنانەت پاسکیل.' },
+      { target: 'nav-activity', emoji: 'pin', title: 'هەموو داواکارییەک بەدواداچوون بکە', body: 'گەشت و داواکارییەکانت لێرەن، کاپتن لەسەر نەخشە دەبینیت.' },
+      { target: 'nav-offers', emoji: 'gift', title: 'ئۆفەرەکان لەدەست مەدە', body: 'کوپۆنی نوێ چاوەڕێتن. کۆدەکە کۆپی بکە و لە کاتی پارەداندا بەکاری بهێنە.' },
+      { emoji: 'party', title: 'ئامادەیت!', body: 'ئەوە بوو. دەتوانیت لە پەڕەی هەژمارەوە گەشتەکە دووبارە بکەیتەوە.' },
     ],
   },
   tr: {
@@ -88,14 +89,14 @@ const COPY: Record<'ar' | 'en' | 'ku' | 'tr', Copy> = {
     finish: 'KAP’ı kullanmaya başla',
     of: (a, b) => `${a} / ${b}`,
     steps: [
-      { emoji: '👋', title: 'KAP’a hoş geldin!', body: 'Önemli şeylerle 30 saniyelik hızlı bir tur. Kısa tutacağımıza söz 😄' },
-      { target: 'where', emoji: '🚕', title: 'Nereye?', body: 'Gideceğin yeri buraya yaz, onaylamadan önce fiyatı gör. Sürpriz yok.' },
-      { target: 'services', emoji: '🍔', title: 'Her şey tek yerde', body: 'Yemek, kargo, market ve fırsatlar — bir hizmete dokun ve başla. Kırmızı rozet şu an indirim var demek!' },
-      { target: 'mymap', emoji: '🗺️', title: 'KAP aynı zamanda haritan', body: 'Evini ve işini kaydet, KAP’ı sadece harita uygulaması olarak kullanıp rahatça gidip gel — sesli adım adım yol tarifi, tek dokunuşla trafik ve kaza bildirimi, internetsiz bile çalışır.' },
-      { target: 'drive', emoji: '🚲', title: 'KAP ile kazan', body: 'Artık her araçla KAP kaptanı olabilirsin: araba 🚗, motosiklet 🛵, hatta bisiklet 🚲.' },
-      { target: 'nav-activity', emoji: '📍', title: 'Her siparişi takip et', body: 'Yolculukların ve siparişlerin burada, kaptanı haritada canlı gör.' },
-      { target: 'nav-offers', emoji: '🎁', title: 'Fırsatları kaçırma', body: 'Yeni kuponlar seni bekliyor. Kodu kopyala, ödemede kullan.' },
-      { emoji: '🎉', title: 'Hazırsın!', body: 'Hepsi bu. Turu Hesap sayfasından tekrar izleyebilirsin.' },
+      { emoji: 'bubble', title: 'KAP’a hoş geldin!', body: 'Önemli şeylerle 30 saniyelik hızlı bir tur. Kısa tutacağımıza söz.' },
+      { target: 'where', emoji: 'taxi', title: 'Nereye?', body: 'Gideceğin yeri buraya yaz, onaylamadan önce fiyatı gör. Sürpriz yok.' },
+      { target: 'services', emoji: 'burger', title: 'Her şey tek yerde', body: 'Yemek, kargo, market ve fırsatlar — bir hizmete dokun ve başla. Kırmızı rozet şu an indirim var demek!' },
+      { target: 'mymap', emoji: 'map', title: 'KAP aynı zamanda haritan', body: 'Evini ve işini kaydet, KAP’ı sadece harita uygulaması olarak kullanıp rahatça gidip gel — sesli adım adım yol tarifi, tek dokunuşla trafik ve kaza bildirimi, internetsiz bile çalışır.' },
+      { target: 'drive', emoji: 'bicycle', title: 'KAP ile kazan', body: 'Artık her araçla KAP kaptanı olabilirsin: araba, motosiklet, hatta bisiklet.' },
+      { target: 'nav-activity', emoji: 'pin', title: 'Her siparişi takip et', body: 'Yolculukların ve siparişlerin burada, kaptanı haritada canlı gör.' },
+      { target: 'nav-offers', emoji: 'gift', title: 'Fırsatları kaçırma', body: 'Yeni kuponlar seni bekliyor. Kodu kopyala, ödemede kullan.' },
+      { emoji: 'party', title: 'Hazırsın!', body: 'Hepsi bu. Turu Hesap sayfasından tekrar izleyebilirsin.' },
     ],
   },
 };
@@ -260,12 +261,12 @@ function TourInner() {
                 <KMark size={center ? 64 : 44} />
               </span>
             ) : (
-              <span aria-hidden className={`${center ? 'text-6xl' : 'text-4xl'} leading-none animate-tour-bounce`}>
-                {step.emoji}
+              <span aria-hidden className="animate-tour-bounce shrink-0">
+                <Glyph name={step.emoji} className={center ? 'w-20 h-20' : 'w-14 h-14'} />
               </span>
             )}
             <div className="flex-1 min-w-0">
-              <h2 id="kap-tour-title" className={`font-black ${center ? 'text-2xl mt-2' : 'text-lg'}`}>
+              <h2 id="kap-tour-title" className={`font-bold ${center ? 'text-2xl mt-2' : 'text-lg'}`}>
                 {step.title}
               </h2>
               <p className="text-sm text-muted leading-6 mt-1">{step.body}</p>
@@ -299,7 +300,7 @@ function TourInner() {
               </>
             ) : last ? (
               <button onClick={close} className={btn({ size: 'md', full: true })}>
-                {copy.finish} 🚀
+                {copy.finish}
               </button>
             ) : (
               <>

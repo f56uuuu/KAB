@@ -1,9 +1,10 @@
 'use client';
 
+import { Glyph, GlyphTile } from '@/components/Glyph';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Banknote, MapPin, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Banknote, MapPin, Minus, Plus } from 'lucide-react';
 import { KapMap } from '@/components/KapMap';
 import { Button, Empty, Field, TopBar, inputCls } from '@/components/ui';
 import { PromoField, type Promo } from '@/components/PromoField';
@@ -45,7 +46,7 @@ export default function CheckoutPage() {
       <main className="min-h-screen bg-background">
         <TopBar back="/food" title={t('cart.title')} />
         <Empty
-          icon={<ShoppingBag className="w-7 h-7" />}
+          glyph="cart"
           title={t('cart.empty')}
           sub={t('cart.empty_sub')}
           action={
@@ -88,7 +89,7 @@ export default function CheckoutPage() {
         {/* items */}
         <section>
           <div className="flex items-center justify-between">
-            <h2 className="font-extrabold text-lg">{pick(cart.store_name_ar, cart.store_name)}</h2>
+            <h2 className="font-semibold text-lg">{pick(cart.store_name_ar, cart.store_name)}</h2>
             <button onClick={() => cartStore.clear()} className="text-sm text-danger font-bold">
               {t('cart.clear')}
             </button>
@@ -96,7 +97,7 @@ export default function CheckoutPage() {
           <ul className="divide-y divide-border mt-2">
             {cart.items.map((i) => (
               <li key={i.product_id} className="py-3 flex items-center gap-3">
-                <span className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center text-2xl shrink-0">{i.emoji}</span>
+                <GlyphTile name={i.emoji} fallback="plate" className="w-12 h-12 rounded-2xl" glyph="w-9 h-9" />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold leading-snug truncate">{pick(i.name_ar, i.name)}</p>
                   <p className="text-sm text-muted">{money(i.price * i.qty, cart.currency, locale)}</p>

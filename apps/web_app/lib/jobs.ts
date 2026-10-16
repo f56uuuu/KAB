@@ -41,12 +41,12 @@ export function isActive(kind: JobKind, status: string) {
 }
 
 export const STORE_EMOJI: Record<string, string> = {
-  restaurant: '🍽️',
-  cafe: '☕',
-  sweets: '🍰',
-  grocery: '🛒',
-  pharmacy: '💊',
-  flowers: '💐',
+  restaurant: 'plate',
+  cafe: 'coffee',
+  sweets: 'cake',
+  grocery: 'cart',
+  pharmacy: 'pharmacy',
+  flowers: 'bouquet',
 };
 
 export const FOOD_CATS = ['restaurant', 'cafe', 'sweets'] as const;

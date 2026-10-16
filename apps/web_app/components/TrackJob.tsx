@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, Phone, Share2, ShieldCheck, Star, XCircle } from 'lucide-react';
@@ -339,11 +340,11 @@ export function TrackJob({ kind, id }: { kind: JobKind; id: string }) {
           {/* order items */}
           {view.items && view.items.length > 0 && (
             <div className="rounded-2xl bg-surface p-4">
-              <p className="font-extrabold mb-2">{t('order.items')}</p>
+              <p className="font-semibold mb-2">{t('order.items')}</p>
               <ul className="flex flex-col gap-1.5 text-sm">
                 {view.items.map((i, n) => (
-                  <li key={n} className="flex gap-2">
-                    <span>{i.emoji}</span>
+                  <li key={n} className="flex items-center gap-2.5">
+                    <Glyph name={i.emoji} fallback="plate" className="w-7 h-7 shrink-0" />
                     <span className="flex-1">
                       {i.qty}× {i.name}
                     </span>

@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { BellOff } from 'lucide-react';
+import { Glyph } from '@/components/Glyph';
 import { Empty, TopBar } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { currentUser, sb, useStickyState } from '@/lib/hooks';
 import { jobHref, type JobKind } from '@/lib/jobs';
 import { timeAgo } from '@/lib/format';
 
-const ICON: Record<string, string> = { ride: '🚖', delivery: '📦', order: '🛍️' };
+const ICON: Record<string, string> = { ride: 'taxi', delivery: 'box', order: 'bag' };
 
 export default function NotificationsPage() {
   const { t, pick, locale } = useI18n();
@@ -50,7 +50,7 @@ export default function NotificationsPage() {
         }
       />
       <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto px-5">
-        {items && items.length === 0 && <Empty icon={<BellOff className="w-7 h-7" />} title={t('notif.empty')} />}
+        {items && items.length === 0 && <Empty glyph="bell" title={t('notif.empty')} />}
         <ul className="divide-y divide-border">
           {(items ?? []).map((n) => {
             const [kind, id] = String(n.reference_id ?? '').split(':');
@@ -62,12 +62,12 @@ export default function NotificationsPage() {
                   onClick={() => !n.is_read && sb().from('notifications').update({ is_read: true }).eq('id', n.id).then(() => {})}
                   className="flex gap-3 py-4"
                 >
-                  <span className="relative w-11 h-11 rounded-full bg-surface flex items-center justify-center text-xl shrink-0">
-                    {ICON[kind] ?? '🔔'}
+                  <span className="relative w-12 h-12 rounded-2xl bg-surface flex items-center justify-center shrink-0">
+                    <Glyph name={ICON[kind] ?? 'bell'} className="w-9 h-9" />
                     {!n.is_read && <span className="absolute top-0 end-0 w-3 h-3 rounded-full bg-accent ring-2 ring-background" />}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className={`leading-snug ${n.is_read ? 'font-medium' : 'font-extrabold'}`}>{pick(n.title_ar, n.title)}</p>
+                    <p className={`leading-snug ${n.is_read ? 'font-medium' : 'font-semibold'}`}>{pick(n.title_ar, n.title)}</p>
                     <p className="text-xs text-muted mt-0.5">{timeAgo(n.created_at, locale)}</p>
                   </div>
                 </Link>

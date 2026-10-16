@@ -8,18 +8,18 @@ export type ReportKind = 'traffic' | 'police' | 'accident' | 'hazard' | 'closure
 export type RoadReport = { id: number | string; kind: ReportKind; lat: number; lng: number; note?: string | null; confirms?: number; created_at?: string };
 
 export const REPORT_KINDS: { kind: ReportKind; emoji: string; tint: string }[] = [
-  { kind: 'traffic', emoji: '🚗', tint: '#FFE9E5' },
-  { kind: 'police', emoji: '👮', tint: '#E6EEFF' },
-  { kind: 'accident', emoji: '💥', tint: '#FFE9E5' },
-  { kind: 'hazard', emoji: '⚠️', tint: '#FFF6D6' },
-  { kind: 'closure', emoji: '🚧', tint: '#FFF0E0' },
-  { kind: 'lane', emoji: '🦺', tint: '#FFF0E0' },
-  { kind: 'map', emoji: '🗺️', tint: '#EEF0F3' },
-  { kind: 'weather', emoji: '⛈️', tint: '#E8F1FA' },
-  { kind: 'fuel', emoji: '⛽', tint: '#E5F6EA' },
-  { kind: 'animal', emoji: '🐄', tint: '#F6EDE4' },
-  { kind: 'help', emoji: '🆘', tint: '#FFE9E5' },
-  { kind: 'place', emoji: '📍', tint: '#F0E9FF' },
+  { kind: 'traffic', emoji: 'sedan', tint: '#FFE9E5' },
+  { kind: 'police', emoji: 'siren', tint: '#E6EEFF' },
+  { kind: 'accident', emoji: 'crash', tint: '#FFE9E5' },
+  { kind: 'hazard', emoji: 'warning', tint: '#FFF6D6' },
+  { kind: 'closure', emoji: 'barrier', tint: '#FFF0E0' },
+  { kind: 'lane', emoji: 'cone', tint: '#FFF0E0' },
+  { kind: 'map', emoji: 'map', tint: '#EEF0F3' },
+  { kind: 'weather', emoji: 'storm', tint: '#E8F1FA' },
+  { kind: 'fuel', emoji: 'fuel', tint: '#E5F6EA' },
+  { kind: 'animal', emoji: 'paw', tint: '#F6EDE4' },
+  { kind: 'help', emoji: 'sos', tint: '#FFE9E5' },
+  { kind: 'place', emoji: 'pin', tint: '#F0E9FF' },
 ];
 export const REPORT_EMOJI = Object.fromEntries(REPORT_KINDS.map((k) => [k.kind, k.emoji])) as Record<ReportKind, string>;
 

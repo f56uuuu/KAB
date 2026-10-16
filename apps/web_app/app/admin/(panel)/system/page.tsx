@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import { useEffect, useState } from 'react';
 import { AlertTriangle, Wrench } from 'lucide-react';
 import { PageHead, Panel, cellInput } from '@/components/admin';
@@ -74,7 +75,7 @@ export default function SystemAdmin() {
           />
         </Panel>
         <Panel className={`p-5 flex items-center gap-4 ${demo ? 'border-warning' : ''}`}>
-          <span className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${demo ? 'bg-warning/20' : 'bg-surface'}`}>🧪</span>
+          <span className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${demo ? 'bg-warning/20' : 'bg-surface'}`}><Glyph name="flask" className="w-8 h-8" /></span>
           <div className="flex-1">
             <p className="font-extrabold">{t('admin.flag.DEMO_MODE')}</p>
             <p className="text-xs text-muted">{t('admin.system.demo_hint')}</p>

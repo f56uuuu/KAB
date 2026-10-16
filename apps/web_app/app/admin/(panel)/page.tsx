@@ -1,5 +1,6 @@
 'use client';
 
+
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { KapMap, type MapMarker } from '@/components/KapMap';
@@ -13,7 +14,7 @@ const SERIES = [
   { key: 'orders', color: '#0D0D0F', darkColor: '#F2F2F2', label: 'activity.orders' },
   { key: 'deliveries', color: '#A1A1A1', label: 'activity.deliveries' },
 ] as const;
-const EMOJI: Record<string, string> = { ride: '🚖', delivery: '📦', order: '🛍️' };
+const EMOJI: Record<string, string> = { ride: 'taxi', delivery: 'box', order: 'bag' };
 
 export default function Overview() {
   const { t, locale } = useI18n();
@@ -40,7 +41,7 @@ export default function Overview() {
       ...(live.drivers ?? []).map((d: any) => ({
         id: `d${d.id}`,
         kind: d.type === 'BIKE' || d.type === 'BICYCLE' ? 'bike' : 'car',
-        emoji: d.type === 'BICYCLE' ? '🚲' : undefined,
+        emoji: d.type === 'BICYCLE' ? 'bicycle' : undefined,
         lat: +d.lat,
         lng: +d.lng,
         dim: !d.online,

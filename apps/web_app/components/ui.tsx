@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Loader2 } from 'lucide-react';
@@ -95,12 +96,19 @@ export function TopBar({ title, back, right }: { title?: string; back?: string |
   );
 }
 
-export function Empty({ icon, title, sub, action }: { icon: React.ReactNode; title: string; sub?: string; action?: React.ReactNode }) {
+export function Empty({ icon, glyph, title, sub, action }: { icon?: React.ReactNode; glyph?: string; title: string; sub?: string; action?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center text-center px-8 py-16 gap-3">
-      <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center text-muted">{icon}</div>
-      <p className="font-extrabold text-lg">{title}</p>
-      {sub && <p className="text-sm text-muted max-w-xs">{sub}</p>}
+    <div className="flex flex-col items-center text-center px-8 py-14 gap-3">
+      {glyph ? (
+        <span className="relative w-28 h-28 flex items-center justify-center">
+          <span aria-hidden className="absolute inset-0 kap-glow" />
+          <Glyph name={glyph} className="relative w-20 h-20 drop-shadow-[0_10px_12px_rgba(0,0,0,.2)]" />
+        </span>
+      ) : (
+        <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center text-muted">{icon}</div>
+      )}
+      <p className="font-semibold text-lg">{title}</p>
+      {sub && <p className="text-sm text-muted max-w-xs leading-relaxed">{sub}</p>}
       {action}
     </div>
   );

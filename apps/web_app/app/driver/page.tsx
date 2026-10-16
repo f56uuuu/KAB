@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Clock, Navigation, Phone, Power, ShieldAlert, Wallet } from 'lucide-react';
@@ -15,13 +16,13 @@ import { DriverDocs, DriverSteps, RequiredDocsPreview, stepsTxt } from '@/compon
 import { PhoneVerify, otpReady, sheetTxt } from '@/components/PhoneVerify';
 
 const VEHICLES = [
-  { v: 'ECONOMY', emoji: '🚗' },
-  { v: 'COMFORT', emoji: '🚙' },
-  { v: 'XL', emoji: '🚐' },
-  { v: 'BIKE', emoji: '🛵' },
-  { v: 'BICYCLE', emoji: '🚲' },
+  { v: 'ECONOMY', emoji: 'sedan' },
+  { v: 'COMFORT', emoji: 'suv' },
+  { v: 'XL', emoji: 'van' },
+  { v: 'BIKE', emoji: 'scooter' },
+  { v: 'BICYCLE', emoji: 'bicycle' },
 ];
-const KIND_EMOJI: Record<string, string> = { ride: '🚖', delivery: '📦', order: '🛍️' };
+const KIND_EMOJI: Record<string, string> = { ride: 'taxi', delivery: 'box', order: 'bag' };
 
 export default function DriverPage() {
   const { t } = useI18n();
@@ -161,10 +162,10 @@ function Register({ existing, onDone }: { existing: any; onDone: (d: any) => voi
                 aria-checked={f.type === v}
                 onClick={() => setF({ ...f, type: v })}
                 className={`h-20 rounded-2xl border-2 flex flex-col items-center justify-center gap-1 text-[11px] font-bold ${
-                  f.type === v ? 'border-fg bg-surface' : 'border-border'
+                  f.type === v ? 'border-accent bg-accent/10' : 'border-border bg-surface'
                 }`}
               >
-                <span className="text-2xl">{emoji}</span>
+                <Glyph name={emoji} className="w-10 h-10" />
                 {t(`vehicle.${v}` as any)}
               </button>
             ))}
@@ -386,9 +387,9 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
 
   const markers = useMemo<MapMarker[]>(() => {
     const m: MapMarker[] = [];
-    if (pos) m.push({ id: 'me', kind: me.vehicle_type === 'BIKE' || me.vehicle_type === 'BICYCLE' ? 'bike' : 'car', emoji: me.vehicle_type === 'BICYCLE' ? '🚲' : undefined, ...pos });
+    if (pos) m.push({ id: 'me', kind: me.vehicle_type === 'BIKE' || me.vehicle_type === 'BICYCLE' ? 'bike' : 'car', emoji: me.vehicle_type === 'BICYCLE' ? 'bicycle' : undefined, ...pos });
     if (job) {
-      m.push({ id: 'from', kind: job.kind === 'order' ? 'store' : 'pickup', lat: +job.from_lat, lng: +job.from_lng, emoji: '🛍️' });
+      m.push({ id: 'from', kind: job.kind === 'order' ? 'store' : 'pickup', lat: +job.from_lat, lng: +job.from_lng, emoji: 'bag' });
       m.push({ id: 'to', kind: 'dropoff', lat: +job.to_lat, lng: +job.to_lng });
     } else {
       jobs.forEach((j) => m.push({ id: `${j.kind}${j.id}`, kind: 'job', lat: +j.from_lat, lng: +j.from_lng, emoji: KIND_EMOJI[j.kind] }));
@@ -461,7 +462,7 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
                     {jobs.map((j) => (
                       <li key={`${j.kind}${j.id}`} className="rounded-2xl border border-border p-4 animate-slide-up">
                         <div className="flex items-start gap-3">
-                          <span className="text-2xl">{KIND_EMOJI[j.kind]}</span>
+                          <Glyph name={KIND_EMOJI[j.kind]} className="w-9 h-9 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="font-extrabold">
                               {t(`kind.${j.kind}` as any)}
@@ -530,8 +531,9 @@ function Dashboard({ me, setMe }: { me: any; setMe: (d: any) => void }) {
                 <div className="rounded-2xl bg-surface p-4 text-sm">
                   <p className="font-extrabold mb-1">{t('driver.items')}</p>
                   {job.items.map((i: any, n: number) => (
-                    <p key={n}>
-                      {i.emoji} {i.qty}× {String(i.name).split(' | ')[0]}
+                    <p key={n} className="flex items-center gap-2 py-0.5">
+                      <Glyph name={i.emoji} fallback="plate" className="w-6 h-6 shrink-0" />
+                      {i.qty}× {String(i.name).split(' | ')[0]}
                     </p>
                   ))}
                   {job.notes && <p className="text-muted mt-2">“{job.notes}”</p>}

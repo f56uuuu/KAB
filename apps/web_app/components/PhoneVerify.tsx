@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import { useEffect, useRef, useState } from 'react';
 import { MessageSquareText, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -7,9 +8,9 @@ import { useI18n } from '@/lib/i18n';
 import { sb } from '@/lib/hooks';
 
 export const COUNTRIES = [
-  { code: '+964', flag: '🇮🇶' },
-  { code: '+971', flag: '🇦🇪' },
-  { code: '+963', flag: '🇸🇾' },
+  { code: '+964', flag: 'flag_iq' },
+  { code: '+971', flag: 'flag_ae' },
+  { code: '+963', flag: 'flag_sy' },
 ];
 
 const TXT = {
@@ -128,18 +129,21 @@ export function PhoneVerify({ mode, initialPhone, onDone }: { mode: 'login' | 'l
       {step === 'phone' ? (
         <>
           <div className="flex gap-2" dir="ltr">
-            <select
-              aria-label="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="h-14 rounded-2xl border border-border bg-surface px-3 font-bold text-base"
-            >
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.flag} {c.code}
-                </option>
-              ))}
-            </select>
+            <div className="relative shrink-0">
+              <Glyph name={COUNTRIES.find((c) => c.code === country)?.flag} className="absolute start-2.5 top-1/2 -translate-y-1/2 w-7 h-7 pointer-events-none" />
+              <select
+                aria-label="country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="h-14 rounded-2xl border border-border bg-surface ps-11 pe-3 appearance-none font-bold text-base"
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.code}
+                  </option>
+                ))}
+              </select>
+            </div>
             <input
               type="tel"
               inputMode="tel"

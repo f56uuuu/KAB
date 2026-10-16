@@ -8,15 +8,16 @@ import { btn } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { mapProvider, type LatLng, type RouteStep } from '@/lib/maps';
 import { bearing, distanceShort, instruction, makePlan, metres, progress, say, spoken, turnOf, type NavPlan, type Turn } from '@/lib/nav';
+import { Glyph } from '@/components/Glyph';
 import { flushReports, REPORT_EMOJI, reportsNear, reportTxt, submitReport, type ReportKind, type RoadReport } from '@/lib/reports';
 import { VoiceButton } from '@/components/VoiceButton';
 import { parseCommand } from '@/lib/voice';
 
 const TXT = {
-  ar: { end: 'إنهاء', arrive: 'الوصول', min: 'د', km: 'كم', kmh: 'كم/س', arrived: 'وصلت! 🎉', arrivedSub: 'وصلت إلى', done: 'تم', rerouting: 'نعيد حساب الطريق…', follow: 'اتبع الخط الأصفر', toward: 'باتجاه', then: 'ثم', gps: 'نبحث عن إشارة GPS…', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', offline: 'بدون إنترنت — نكمل على المسار المحفوظ' },
-  en: { end: 'End', arrive: 'Arrival', min: 'min', km: 'km', kmh: 'km/h', arrived: 'You’ve arrived! 🎉', arrivedSub: 'You reached', done: 'Done', rerouting: 'Finding a new route…', follow: 'Follow the yellow line', toward: 'Toward', then: 'Then', gps: 'Looking for GPS…', mute: 'Mute', unmute: 'Unmute', offline: 'Offline — following your saved route' },
-  ku: { end: 'کۆتایی', arrive: 'گەیشتن', min: 'خ', km: 'کم', kmh: 'کم/ک', arrived: 'گەیشتیت! 🎉', arrivedSub: 'گەیشتیتە', done: 'باشە', rerouting: 'ڕێگای نوێ دەدۆزینەوە…', follow: 'هێڵە زەردەکە بگرە', toward: 'بەرەو', then: 'پاشان', gps: 'بەدوای GPS دەگەڕێین…', mute: 'بێدەنگ', unmute: 'دەنگ', offline: 'بێ ئینتەرنێت — لەسەر ڕێگای پاشەکەوتکراو بەردەوامین' },
-  tr: { end: 'Bitir', arrive: 'Varış', min: 'dk', km: 'km', kmh: 'km/s', arrived: 'Vardın! 🎉', arrivedSub: 'Ulaştığın yer', done: 'Tamam', rerouting: 'Yeni rota bulunuyor…', follow: 'Sarı çizgiyi takip et', toward: 'Yön', then: 'Sonra', gps: 'GPS aranıyor…', mute: 'Sesi kapat', unmute: 'Sesi aç', offline: 'Çevrimdışı — kayıtlı rotan izleniyor' },
+  ar: { end: 'إنهاء', arrive: 'الوصول', min: 'د', km: 'كم', kmh: 'كم/س', arrived: 'وصلت!', arrivedSub: 'وصلت إلى', done: 'تم', rerouting: 'نعيد حساب الطريق…', follow: 'اتبع الخط الأصفر', toward: 'باتجاه', then: 'ثم', gps: 'نبحث عن إشارة GPS…', mute: 'كتم الصوت', unmute: 'تشغيل الصوت', offline: 'بدون إنترنت — نكمل على المسار المحفوظ' },
+  en: { end: 'End', arrive: 'Arrival', min: 'min', km: 'km', kmh: 'km/h', arrived: 'You’ve arrived!', arrivedSub: 'You reached', done: 'Done', rerouting: 'Finding a new route…', follow: 'Follow the yellow line', toward: 'Toward', then: 'Then', gps: 'Looking for GPS…', mute: 'Mute', unmute: 'Unmute', offline: 'Offline — following your saved route' },
+  ku: { end: 'کۆتایی', arrive: 'گەیشتن', min: 'خ', km: 'کم', kmh: 'کم/ک', arrived: 'گەیشتیت!', arrivedSub: 'گەیشتیتە', done: 'باشە', rerouting: 'ڕێگای نوێ دەدۆزینەوە…', follow: 'هێڵە زەردەکە بگرە', toward: 'بەرەو', then: 'پاشان', gps: 'بەدوای GPS دەگەڕێین…', mute: 'بێدەنگ', unmute: 'دەنگ', offline: 'بێ ئینتەرنێت — لەسەر ڕێگای پاشەکەوتکراو بەردەوامین' },
+  tr: { end: 'Bitir', arrive: 'Varış', min: 'dk', km: 'km', kmh: 'km/s', arrived: 'Vardın!', arrivedSub: 'Ulaştığın yer', done: 'Tamam', rerouting: 'Yeni rota bulunuyor…', follow: 'Sarı çizgiyi takip et', toward: 'Yön', then: 'Sonra', gps: 'GPS aranıyor…', mute: 'Sesi kapat', unmute: 'Sesi aç', offline: 'Çevrimdışı — kayıtlı rotan izleniyor' },
 };
 
 const TURN_ICON: Record<Turn, typeof ArrowUp> = {
@@ -239,7 +240,7 @@ export function NavMode({ target, route, onExit, onRoute, toast }: { target: Nav
       const r = await submitReport(c.kind, pos);
       const rt = reportTxt(lang);
       const m = r === 'sent' ? rt.thanks : r === 'queued' ? rt.queued : r === 'login' ? rt.login : rt.failed;
-      toast(`${REPORT_EMOJI[c.kind]} ${m}`);
+      toast(m);
       if (!mutedRef.current) say(m, lang);
       if (r === 'sent' || r === 'queued') setReports((rs) => [{ id: `local-${Date.now()}`, kind: c.kind, lat: pos.lat, lng: pos.lng }, ...rs]);
     }
@@ -312,7 +313,7 @@ export function NavMode({ target, route, onExit, onRoute, toast }: { target: Nav
           )}
           {ahead && (
             <div className="rounded-full bg-background text-fg text-sm font-bold px-3 h-9 flex items-center gap-1.5 shadow-float pointer-events-auto animate-slide-up">
-              <span className="text-lg leading-none">{REPORT_EMOJI[ahead.r.kind as ReportKind]}</span>
+              <Glyph name={REPORT_EMOJI[ahead.r.kind as ReportKind]} className="w-7 h-7 shrink-0" />
               {reportTxt(lang).kinds[ahead.r.kind as ReportKind]}
               <span className="text-muted" dir="ltr">
                 {distanceShort(ahead.d, lang)}
@@ -365,7 +366,7 @@ export function NavMode({ target, route, onExit, onRoute, toast }: { target: Nav
       {arrived && (
         <div className="absolute inset-0 z-[20] bg-black/40 flex items-end justify-center animate-tour-fade">
           <div className="w-full max-w-md bg-background rounded-t-sheet shadow-sheet safe-bottom px-6 pt-6 pb-4 text-center animate-slide-up">
-            <p className="text-5xl mb-2">🏁</p>
+            <Glyph name="flag" className="w-16 h-16 mx-auto mb-2" />
             <h2 className="text-2xl font-black">{tx.arrived}</h2>
             <p className="text-muted mt-1">
               {tx.arrivedSub} {target.name}

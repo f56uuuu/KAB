@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import type { LatLng } from '@/lib/maps';
+import { Glyph } from '@/components/Glyph';
 import { REPORT_KINDS, reportTxt, submitReport, type ReportKind } from '@/lib/reports';
 
 /** The yellow "report" button that sits at the bottom of the map. */
@@ -55,7 +56,7 @@ export function ReportSheet({ open, at, onClose, onDone }: { open: boolean; at: 
       <div className="relative w-full max-w-md bg-background rounded-t-sheet shadow-sheet safe-bottom animate-slide-up max-h-[88vh] overflow-y-auto">
         <div className="w-10 h-1.5 rounded-full bg-border mx-auto mt-2.5" />
         <div className="flex items-center justify-between px-5 pt-3 pb-1">
-          <h2 className="text-2xl font-black">{tx.title}</h2>
+          <h2 className="text-2xl font-bold">{tx.title}</h2>
           <button onClick={onClose} aria-label="close" className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface">
             <X className="w-6 h-6" />
           </button>
@@ -64,11 +65,11 @@ export function ReportSheet({ open, at, onClose, onDone }: { open: boolean; at: 
           {REPORT_KINDS.map(({ kind, emoji }) => (
             <button key={kind} onClick={() => pick(kind)} disabled={!!busy} className="flex flex-col items-center gap-2 group disabled:opacity-60">
               <span
-                className={`w-[84px] h-[84px] max-w-full aspect-square rounded-full bg-surface flex items-center justify-center text-[40px] leading-none transition-transform group-active:scale-90 ${
+                className={`w-[84px] h-[84px] max-w-full aspect-square rounded-full bg-surface flex items-center justify-center transition-transform group-active:scale-90 ${
                   busy === kind ? 'animate-pulse ring-4 ring-accent' : ''
                 }`}
               >
-                {emoji}
+                <Glyph name={emoji} className="w-12 h-12" />
               </span>
               <span className="text-sm font-bold text-center leading-tight">{tx.kinds[kind]}</span>
             </button>

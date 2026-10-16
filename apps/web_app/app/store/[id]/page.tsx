@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph, GlyphTile } from '@/components/Glyph';
 import { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { BackButton, Button } from '@/components/ui';
@@ -65,20 +66,16 @@ export default function StorePage({ params }: { params: { id: string } }) {
 
   return (
     <main className="min-h-screen bg-background pb-32">
-      <div
-        className="relative h-56 flex items-center justify-center"
-        style={{ background: `linear-gradient(160deg, ${store.color}55, ${store.color}18)` }}
-      >
-        <span className="text-[96px]" aria-hidden>
-          {store.emoji}
-        </span>
+      <div className="relative h-56 flex items-center justify-center overflow-hidden bg-surface">
+        <span aria-hidden className="absolute inset-0 kap-glow" />
+        <Glyph name={store.emoji} fallback={store.category} className="relative w-32 h-32 -mt-4 drop-shadow-[0_14px_16px_rgba(0,0,0,.25)]" />
         <div className="absolute top-0 inset-x-0 safe-top px-4 pt-2">
           <BackButton href="/food" />
         </div>
       </div>
 
       <div className="max-w-md md:max-w-2xl lg:max-w-3xl mx-auto -mt-6 relative bg-background rounded-t-sheet px-5 pt-6">
-        <h1 className="text-2xl font-black leading-tight">{pick(store.name_ar, store.name)}</h1>
+        <h1 className="text-2xl font-bold leading-tight">{pick(store.name_ar, store.name)}</h1>
         <p className="text-sm text-muted mt-0.5">{store.address}</p>
         <StoreMeta store={store} currency={currency} className="mt-2 text-sm" />
         {Number(store.min_order) > 0 && (
@@ -108,17 +105,17 @@ export default function StorePage({ params }: { params: { id: string } }) {
 
         {sections.map(([name, items]) => (
           <section key={name} id={`sec-${slug(name)}`} className="pt-5 scroll-mt-16">
-            <h2 className="font-extrabold text-lg mb-2">{pick(items[0]?.section_ar, name)}</h2>
+            <h2 className="font-semibold text-lg mb-2">{pick(items[0]?.section_ar, name)}</h2>
             <ul className="divide-y divide-border md:divide-y-0 md:grid md:grid-cols-2 md:gap-x-6 md:[&>li]:border-b md:[&>li]:border-border">
               {items.map((p) => {
                 const q = qtyOf(p.id);
                 return (
                   <li key={p.id} className="py-3.5 flex gap-3 items-center">
-                    <div className="w-20 h-20 rounded-2xl bg-surface flex items-center justify-center text-4xl shrink-0">{p.emoji}</div>
+                    <GlyphTile name={p.emoji} fallback={store.category} className="w-20 h-20 rounded-[20px]" glyph="w-14 h-14" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-extrabold leading-snug">{pick(p.name_ar, p.name)}</p>
+                      <p className="font-semibold leading-snug">{pick(p.name_ar, p.name)}</p>
                       {(p.description || p.description_ar) && <p className="text-xs text-muted leading-snug mt-0.5 line-clamp-2">{pick(p.description_ar, p.description)}</p>}
-                      <p className="font-black mt-1.5">{money(p.price, currency, locale)}</p>
+                      <p className="font-bold mt-1.5">{money(p.price, currency, locale)}</p>
                     </div>
                     {!p.is_available || !store.is_open ? (
                       <span className="text-xs text-muted font-bold">{t('store.unavailable')}</span>

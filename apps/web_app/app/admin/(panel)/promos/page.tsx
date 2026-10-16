@@ -1,5 +1,7 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
+import { GlyphPicker } from '@/components/GlyphPicker';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Modal, PageHead, Panel, Pill } from '@/components/admin';
@@ -10,7 +12,7 @@ import { sb } from '@/lib/hooks';
 const LINKS = ['/home', '/ride/new', '/send', '/food', '/food?type=market', '/offers'];
 const SERVICES = ['ALL', 'RIDE', 'DELIVERY', 'FOOD'];
 const TYPES = ['PERCENT', 'FIXED', 'FREE_DELIVERY'];
-const NEW_BANNER = { title: '', title_ar: '', description: '', description_ar: '', color: '#FFD100', emoji: '🎁', link: '/home', sort: 10, is_active: true };
+const NEW_BANNER = { title: '', title_ar: '', description: '', description_ar: '', color: '#FFD100', emoji: 'gift', link: '/home', sort: 10, is_active: true };
 const NEW_COUPON = { code: '', discount_type: 'PERCENT', discount_value: 10, service_type: 'ALL', maximum_uses: 1000, is_active: true, expiry_date: '', description: '', description_ar: '' };
 
 export default function PromosAdmin() {
@@ -74,7 +76,7 @@ export default function PromosAdmin() {
                   <p className="font-black leading-tight truncate">{pick(b.title_ar, b.title)}</p>
                   <p className="text-xs opacity-80 truncate">{pick(b.description_ar, b.description)}</p>
                 </div>
-                <span className="text-4xl">{b.emoji}</span>
+                <Glyph name={b.emoji} fallback="gift" className="w-14 h-14 shrink-0" />
               </div>
               <div className="p-3 flex items-center gap-2">
                 <Switch checked={!!b.is_active} onChange={(v) => toggle('banners', b.id, v)} label={t('admin.stores.visible')} />
@@ -156,7 +158,7 @@ export default function PromosAdmin() {
               <input type="color" value={banner.color ?? '#FFD100'} onChange={bset('color')} className={`${inputCls} p-1`} />
             </Field>
             <Field label={t('admin.stores.emoji')}>
-              <input value={banner.emoji ?? ''} onChange={bset('emoji')} className={inputCls} maxLength={4} />
+              <GlyphPicker value={banner.emoji} onChange={(v) => setBanner((x: any) => ({ ...x, emoji: v }))} label={t('admin.stores.emoji')} />
             </Field>
             <Field label={t('admin.promos.link')}>
               <select value={banner.link ?? '/home'} onChange={bset('link')} className={inputCls} dir="ltr">

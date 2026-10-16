@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph } from '@/components/Glyph';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Crosshair, X } from 'lucide-react';
@@ -15,7 +16,7 @@ import { errorCode, money } from '@/lib/format';
 import { trips as tripStore } from '@/lib/offline';
 
 type Quote = { currency: string; km: number; min: number; options: { vehicle_type: string; amount: number; surge: number; cancellation_fee: number }[] };
-const VEHICLE_EMOJI: Record<string, string> = { ECONOMY: '🚗', COMFORT: '🚙', XL: '🚐' };
+const VEHICLE_GLYPH: Record<string, string> = { ECONOMY: 'sedan', COMFORT: 'suv', XL: 'van' };
 
 export default function NewRidePage() {
   return (
@@ -273,17 +274,15 @@ function NewRide() {
                         aria-checked={on}
                         onClick={() => setVehicle(o.vehicle_type)}
                         className={`flex items-center gap-3 rounded-2xl px-4 py-3 border-2 text-start transition-colors ${
-                          on ? 'border-fg bg-surface' : 'border-transparent bg-surface/60'
+                          on ? 'border-accent bg-accent/10' : 'border-transparent bg-surface'
                         }`}
                       >
-                        <span className="text-3xl" aria-hidden>
-                          {VEHICLE_EMOJI[o.vehicle_type] ?? '🚗'}
-                        </span>
+                        <Glyph name={VEHICLE_GLYPH[o.vehicle_type] ?? 'sedan'} className="w-14 h-14 shrink-0" />
                         <span className="flex-1 min-w-0">
-                          <span className="block font-extrabold">{t(`vehicle.${o.vehicle_type}` as any)}</span>
+                          <span className="block font-semibold">{t(`vehicle.${o.vehicle_type}` as any)}</span>
                           <span className="block text-xs text-muted">{t(`vehicle.${o.vehicle_type}_sub` as any)}</span>
                         </span>
-                        <span className="font-black text-lg">{money(o.amount, quote.currency, locale)}</span>
+                        <span className="font-bold text-lg">{money(o.amount, quote.currency, locale)}</span>
                       </button>
                     );
                   })}

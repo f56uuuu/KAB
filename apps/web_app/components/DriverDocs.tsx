@@ -1,5 +1,6 @@
 'use client';
 
+import { Glyph, GlyphTile } from '@/components/Glyph';
 import { useEffect, useRef, useState } from 'react';
 import { Camera, CheckCircle2, Clock, Eye, FileUp, Lock, RotateCcw, ShieldCheck, XCircle } from 'lucide-react';
 import { Button, inputCls } from '@/components/ui';
@@ -9,13 +10,13 @@ import { currentUser, sb } from '@/lib/hooks';
 export type DocType = 'selfie' | 'national_id_front' | 'national_id_back' | 'driving_license' | 'vehicle_registration' | 'insurance' | 'vehicle_photo';
 
 const META: Record<DocType, { emoji: string; number?: boolean; expiry?: boolean; selfie?: boolean }> = {
-  selfie: { emoji: '🤳', selfie: true },
-  national_id_front: { emoji: '🪪', number: true },
-  national_id_back: { emoji: '🪪' },
-  driving_license: { emoji: '🚘', number: true, expiry: true },
-  vehicle_registration: { emoji: '📄', number: true, expiry: true },
-  insurance: { emoji: '🛡️', number: true, expiry: true },
-  vehicle_photo: { emoji: '📸' },
+  selfie: { emoji: 'selfie', selfie: true },
+  national_id_front: { emoji: 'idcard', number: true },
+  national_id_back: { emoji: 'idcard' },
+  driving_license: { emoji: 'license', number: true, expiry: true },
+  vehicle_registration: { emoji: 'document', number: true, expiry: true },
+  insurance: { emoji: 'shield', number: true, expiry: true },
+  vehicle_photo: { emoji: 'camera' },
 };
 
 const L = {
@@ -122,9 +123,9 @@ export function DriverDocs({ me, onChange }: { me: any; onChange: (d: any) => vo
           return (
             <li key={type} className="rounded-2xl border border-border p-3">
               <div className="flex items-center gap-3">
-                <span className="w-11 h-11 rounded-xl bg-surface flex items-center justify-center text-2xl shrink-0">{META[type]?.emoji}</span>
+                <GlyphTile name={META[type]?.emoji} className="w-12 h-12 rounded-2xl" glyph="w-9 h-9" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-extrabold truncate">{label}</p>
+                  <p className="font-semibold truncate">{label}</p>
                   {hint && s === 'missing' && <p className="text-xs text-muted truncate">{hint}</p>}
                   {d?.expiry && <p className="text-xs text-muted" dir="ltr">{d.expiry}</p>}
                 </div>
@@ -228,7 +229,7 @@ function Uploader({ type, onCancel, onDone }: { type: DocType; onCancel: () => v
         // eslint-disable-next-line @next/next/no-img-element
         <img src={preview} alt="" className={`w-full max-h-64 object-contain rounded-xl bg-surface ${meta.selfie ? 'aspect-square object-cover max-w-[220px] mx-auto rounded-full' : ''}`} />
       ) : file ? (
-        <p className="rounded-xl bg-surface px-3 py-3 text-sm font-bold truncate">📄 {file.name}</p>
+        <p className="rounded-xl bg-surface px-3 py-3 text-sm font-bold truncate flex items-center gap-2"><Glyph name="document" className="w-6 h-6 shrink-0" />{file.name}</p>
       ) : (
         <button onClick={() => input.current?.click()} className="h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-sm font-bold text-muted">
           {meta.selfie ? <Camera className="w-6 h-6" /> : <FileUp className="w-6 h-6" />}
@@ -316,7 +317,7 @@ export function AdminDriverDocs({ driverId, onChanged }: { driverId: number; onC
         return (
           <div key={type} className="rounded-xl border border-border p-3 flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xl">{META[type]?.emoji}</span>
+              <Glyph name={META[type]?.emoji} className="w-7 h-7 shrink-0" />
               <p className="font-bold flex-1 min-w-0 truncate">{tx.docs[type]?.[0] ?? type}</p>
               <span className={`text-[11px] font-black h-6 px-2 rounded-full flex items-center gap-1 ${TONE[s] ?? TONE.missing}`}>{d ? tx.status[s] ?? s : a.none}</span>
             </div>
@@ -411,10 +412,11 @@ export function RequiredDocsPreview({ vehicle }: { vehicle: string }) {
     <div className="rounded-2xl bg-surface p-4">
       <p className="text-sm font-black mb-2">{st.need}</p>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm">
-        <li className="flex items-center gap-2">📱 {st.phone}</li>
+        <li className="flex items-center gap-2"><Glyph name="phone" className="w-5 h-5 shrink-0" />{st.phone}</li>
         {list.map((d) => (
           <li key={d} className="flex items-center gap-2">
-            {META[d].emoji} {tx.docs[d][0]}
+            <Glyph name={META[d].emoji} className="w-5 h-5 shrink-0" />
+            {tx.docs[d][0]}
           </li>
         ))}
       </ul>

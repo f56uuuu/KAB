@@ -1,5 +1,7 @@
 'use client';
 
+import { GlyphTile } from '@/components/Glyph';
+import { GlyphPicker } from '@/components/GlyphPicker';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Printer, Trash2 } from 'lucide-react';
 import { CityOptions } from '@/components/CityPicker';
@@ -11,7 +13,7 @@ import { sb } from '@/lib/hooks';
 import { FOOD_CATS, MARKET_CATS } from '@/lib/jobs';
 
 const CATS: string[] = [...FOOD_CATS, ...MARKET_CATS];
-const EMPTY_STORE = { name: '', name_ar: '', category: CATS[0] ?? 'burger', emoji: '🍔', color: '#FFD100', city_id: '', delivery_fee: 1500, min_order: 0, delivery_minutes: 30, latitude: '', longitude: '', address: '', is_open: true, is_active: true, sort: 100 };
+const EMPTY_STORE = { name: '', name_ar: '', category: CATS[0] ?? 'burger', emoji: 'burger', color: '#FFD100', city_id: '', delivery_fee: 1500, min_order: 0, delivery_minutes: 30, latitude: '', longitude: '', address: '', is_open: true, is_active: true, sort: 100 };
 
 export default function StoresAdmin() {
   const { t, pick, lang } = useI18n();
@@ -83,9 +85,7 @@ export default function StoresAdmin() {
         {shown.map((s) => (
           <Panel key={s.id} className={`p-4 flex flex-col gap-3 ${s.is_active ? '' : 'opacity-60'}`}>
             <div className="flex items-start gap-3">
-              <span className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0" style={{ background: s.color || '#FFD100' }}>
-                {s.emoji}
-              </span>
+              <GlyphTile name={s.emoji} fallback={s.category} className="w-14 h-14 rounded-2xl" glyph="w-10 h-10" />
               <div className="flex-1 min-w-0">
                 <p className="font-extrabold truncate">{pick(s.name_ar, s.name)}</p>
                 <p className="text-xs text-muted truncate">{pick(cities.find((c) => c.id === s.city_id)?.name_ar, cities.find((c) => c.id === s.city_id)?.name)}</p>
@@ -142,7 +142,7 @@ export default function StoresAdmin() {
               </select>
             </Field>
             <Field label={t('admin.stores.emoji')}>
-              <input value={edit.emoji ?? ''} onChange={set('emoji')} className={inputCls} maxLength={4} />
+              <GlyphPicker value={edit.emoji} onChange={(v) => setEdit((x: any) => ({ ...x, emoji: v }))} label={t('admin.stores.emoji')} />
             </Field>
             <Field label={t('admin.promos.color')}>
               <input type="color" value={edit.color ?? '#FFD100'} onChange={set('color')} className={`${inputCls} p-1`} />
@@ -217,7 +217,9 @@ function MenuEditor({ store, toast }: { store: any; toast: (m: string) => void }
     <div className="flex flex-col gap-3">
       {(items ?? []).map((p, i) => (
         <div key={p.id ?? `new${i}`} className={`rounded-xl border border-border p-3 grid grid-cols-6 gap-2 ${p.is_available ? '' : 'opacity-60'}`}>
-          <input value={p.emoji ?? ''} onChange={(e) => upd(i, 'emoji', e.target.value)} className={`${cellInput} col-span-1 text-center`} aria-label={t('admin.stores.emoji')} />
+          <div className="col-span-1">
+            <GlyphPicker compact value={p.emoji} onChange={(v) => upd(i, 'emoji', v)} label={t('admin.stores.emoji')} />
+          </div>
           <input value={p.name ?? ''} onChange={(e) => upd(i, 'name', e.target.value)} className={`${cellInput} col-span-5`} placeholder={t('admin.stores.name_en')} />
           <input value={p.name_ar ?? ''} onChange={(e) => upd(i, 'name_ar', e.target.value)} className={`${cellInput} col-span-6`} placeholder={t('admin.stores.name_ar')} dir="rtl" />
           <input value={p.section ?? ''} onChange={(e) => upd(i, 'section', e.target.value)} className={`${cellInput} col-span-3`} placeholder={t('admin.stores.section')} />
